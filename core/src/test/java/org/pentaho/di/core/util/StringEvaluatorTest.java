@@ -30,6 +30,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.pentaho.di.core.row.ValueMetaInterface;
 
 /**
  * Test class for StringEvaluator functionality.
@@ -188,8 +189,10 @@ public class StringEvaluatorTest {
       evaluator.evaluateString( string );
     }
     assertFalse( evaluator.getStringEvaluationResults().isEmpty() );
-    assertTrue( evaluator.getAdvicedResult().getConversionMeta().isNumber() );
-    assertTrue( mask.equals( evaluator.getAdvicedResult().getConversionMeta().getConversionMask() ) );
+    StringEvaluationResult sre = evaluator.getAdvicedResult();
+    ValueMetaInterface vmi = sre.getConversionMeta();
+    assertTrue( vmi.isNumber() );
+    assertEquals( mask, vmi.getConversionMask() );
   }
 
   /////////////////////////////////////
@@ -213,6 +216,49 @@ public class StringEvaluatorTest {
     assertTrue( evaluator.getAdvicedResult().getConversionMeta().isInteger() );
     assertTrue( mask.equals( evaluator.getAdvicedResult().getConversionMeta().getConversionMask() ) );
   }
+
+  /** DEBUG
+   * Copy of times test from - https://github.com/NJtwentyone/pentaho-kettle/commit/f09f3a283d84179410a6eceb8d81110a2cf3f3e8
+   *  WITH CURRENT IMPLEMENTATION ie 9.4.0.0-289 and earlier (start of time,  9.4.0.0-289)
+   *  TODO ORDER OF strings matter #checkout how StringEvaluator#challengeConversions removes variables in StringEvaluator.evaluationResults
+   *  TODO check out comparator StringEvaluation#getAdvicedResult(), that determines the mask
+   *  TODO why can't we keep track of StringEvaluationResult that sets the variable StringEvaluator.maxPrecision in StringEvaluator#evaluatePrecision
+   *  TODO verify if there are "requirements" to in code comments '// want the shortest format mask for numerics & integers'
+   *  FIXME add length (getConversionMeta().getLength())  and precision (getConversionMeta().getPrecision()) asserts to all tests
+   *
+   */
+
+  // DEBUG
+  @Test
+  public void testColumnOfVaryingScale_PDI_19619_precision_3_small_precision_asc() {
+    testNumber( "#.000", "1.1", "1.999", "1.23" ); // FAILS - returns mask "#.#"
+  }
+
+  // DEBUG
+  @Test
+  public void testColumnOfVaryingScale_PDI_19619_precision_3_small_precision_desc() {
+    testNumber( "#.000", "1.999", "1.23", "1.1" ); // FAILS - returns mask "#.#"
+  }
+
+  // DEBUG
+  @Test
+  public void testColumnOfVaryingScale_PDI_19619_precision_3_single_number() {
+    testNumber( "#.000", "1.999" ); // FAILS - returns mask "#.#"
+  }
+
+  //StringEvaluationIT#testLength_IfEvaluationResultIsNumber()
+  @Test
+  public void testLength_IfEvaluationResultIsNumber(){
+    String[] numbers = new String[] { "1010.10101010", "10.01", "4,309.88" };
+    for ( String value : numbers ) {
+      evaluator.evaluateString( value );
+    }
+    StringEvaluationResult result = evaluator.getAdvicedResult();
+    //assertEquals( "Number", result.getConversionMeta().getTypeDesc() ); // FIXME ignoring type for now
+    assertEquals( 8, result.getConversionMeta().getPrecision() ); // not correctly finding precision for "1010.10101010"
+    assertEquals( 13, result.getConversionMeta().getLength() );
+  }
+
   /////////////////////////////////////
   // currency types
   ////////////////////////////////////
