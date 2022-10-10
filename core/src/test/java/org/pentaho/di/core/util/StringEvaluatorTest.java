@@ -30,6 +30,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.pentaho.di.core.row.ValueMetaInterface;
 
 /**
  * Test class for StringEvaluator functionality.
@@ -188,8 +189,10 @@ public class StringEvaluatorTest {
       evaluator.evaluateString( string );
     }
     assertFalse( evaluator.getStringEvaluationResults().isEmpty() );
-    assertTrue( evaluator.getAdvicedResult().getConversionMeta().isNumber() );
-    assertTrue( mask.equals( evaluator.getAdvicedResult().getConversionMeta().getConversionMask() ) );
+    StringEvaluationResult sre = evaluator.getAdvicedResult();
+    ValueMetaInterface vmi = sre.getConversionMeta();
+    assertTrue( vmi.isNumber() );
+    assertEquals( mask, vmi.getConversionMask() );
   }
 
   /////////////////////////////////////
@@ -213,6 +216,80 @@ public class StringEvaluatorTest {
     assertTrue( evaluator.getAdvicedResult().getConversionMeta().isInteger() );
     assertTrue( mask.equals( evaluator.getAdvicedResult().getConversionMeta().getConversionMask() ) );
   }
+
+  /** DEBUG
+   * Copied some of tim's test from - https://github.com/NJtwentyone/pentaho-kettle/commit/f09f3a283d84179410a6eceb8d81110a2cf3f3e8
+   *  WITH CURRENT IMPLEMENTATION ie 9.4.0.0-288 and earlier (start of time,  9.4.0.0-288)
+   *  TODO ORDER OF strings matter #checkout how StringEvaluator#challengeConversions removes variables in StringEvaluator.evaluationResults
+   *  TODO check out comparator StringEvaluation#getAdvicedResult(), that determines the mask
+   *  TODO why can't we keep track of StringEvaluationResult that sets the variable StringEvaluator.maxPrecision in StringEvaluator#evaluatePrecision
+   *  TODO verify if there are "requirements" to in code comments '// want the shortest format mask for numerics & integers'
+   *  FIXME add length (getConversionMeta().getLength())  and precision (getConversionMeta().getPrecision()) asserts to all tests
+   *
+   */
+
+  // DEBUG
+  @Test
+  public void testColumnOfVaryingScale_PDI_19619_precision_3_small_precision_asc() {
+    testNumber( "#.000", "1.1", "1.999", "1.23" ); // FAILS - returns mask "#.#"
+  }
+
+  // DEBUG
+  @Test
+  public void testColumnOfVaryingScale_PDI_19619_precision_3_small_precision_desc() {
+    testNumber( "#.000", "1.999", "1.23", "1.1" ); // FAILS - returns mask "#.#"
+  }
+
+  // DEBUG
+  @Test
+  public void testColumnOfVaryingScale_PDI_19619_precision_3_single_number() {
+    testNumber( "#.000", "1.999" ); // FAILS - returns mask "#.#"
+  }
+
+  // DEBUG
+  //copy of test from Pentaho-kettle/integration/src/it/java/org/pentaho/di/core/util/StringEvaluatorIT.java#testLength_IfEvaluationResultIsNumber()
+  @Test
+  public void testLength_IfEvaluationResultIsNumber(){
+    String[] numbers = new String[] { "1010.10101010", "10.01", "4,309.88" };
+    for ( String value : numbers ) {
+      evaluator.evaluateString( value );
+    }
+    StringEvaluationResult result = evaluator.getAdvicedResult();
+    //assertEquals( "Number", result.getConversionMeta().getTypeDesc() ); // FIXME ignoring type for now
+    assertEquals( 8, result.getConversionMeta().getPrecision() )
+    assertEquals( 13, result.getConversionMeta().getLength() );
+    assertEquals("#,###,###.#", result.getConversionMeta().getConversionMask());
+    /** FIXME
+     * matching existing implementation of masking, but should "1010.10101010" get a single decimal place mask?
+     * StringEvaluator#DEFAULT_NUMBER_FORMATS highest mask is "#.000000", should we dynamically create a mask
+     * that is 8 decimal places ie "#.00000000"
+     *
+     * original code back in March 6, 2010 https://github.com/pentaho/pentaho-kettle/blob/b5a786f6d9b4ef749c0d79d0bd835563619cc904/src-core/org/pentaho/di/core/util/StringEvaluator.java#L105
+     * had masks such as:
+     *    "#,###,###,###,###,###.############",
+     *    "#.00000000000",
+     *    "00.00000000000",
+     *    "000000.00000000000",
+     */
+  }
+
+
+  // DEBUG
+  // Test to see how commas are handled with a precision greater than 6
+  @Test
+  public void testNumberWithCommasAndPrecision(){
+    String[] numbers = new String[] { "1,234.9876543210" };
+    for ( String value : numbers ) {
+      evaluator.evaluateString( value );
+    }
+    StringEvaluationResult result = evaluator.getAdvicedResult();
+    //assertEquals( "Number", result.getConversionMeta().getTypeDesc() );
+    assertEquals( 10, result.getConversionMeta().getPrecision() );
+    assertEquals( 16, result.getConversionMeta().getLength() );
+    assertEquals("#,###,###.#", result.getConversionMeta().getConversionMask());
+    // FIXME same issue above in #testLength_IfEvaluationResultIsNumber() with numbers with more than 6 decimal places
+  }
+
   /////////////////////////////////////
   // currency types
   ////////////////////////////////////
