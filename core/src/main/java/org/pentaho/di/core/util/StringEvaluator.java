@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.pentaho.di.core.Const;
@@ -371,6 +372,14 @@ public class StringEvaluator {
           }
         };
       }
+
+      // TODO DEBUG new POC code - start
+      List<StringEvaluationResult> matchingMaxPrecision = evaluationResults.stream()
+              .filter( ser -> ser.getConversionMeta().getPrecision() == maxPrecision )
+              .collect(Collectors.toList());
+      // if we haven't found any exact matches, or precision is greater than predefined masks, move on
+      if ( !matchingMaxPrecision.isEmpty()) { evaluationResults = matchingMaxPrecision; };
+      // TODO DEBUG new POC code - end
 
       Collections.sort( evaluationResults, compare );
 
