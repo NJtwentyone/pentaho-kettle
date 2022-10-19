@@ -10,17 +10,22 @@
 
   <name>Pentaho Data Integration Integration Tests</name>
 
-  <parent>
-    <groupId>org.pentaho.di</groupId>
-    <artifactId>pdi</artifactId>
-    <version>9.4.0.0-SNAPSHOT</version>
-  </parent>
+  <!-- FIXME commenting out parent reference, ran into maven issue about 'rootlocation' -->
+<!--  <parent>-->
+<!--    <groupId>org.pentaho.di</groupId>-->
+<!--    <artifactId>pdi</artifactId>-->
+<!--    <version>9.4.0.0-SNAPSHOT</version>-->
+<!--  </parent>-->
 
   <properties>
     <nekohtml.version>1.9.7</nekohtml.version>
     <sshd-sftp.version>0.11.0</sshd-sftp.version>
     <ftpserver-core.version>1.0.6</ftpserver-core.version>
     <pdi.version>9.4.0.0-SNAPSHOT</pdi.version>
+
+    <!-- FIXME setting to 8 or later, ran into compile complaining about 6 -->
+      <maven.compiler.source>1.8</maven.compiler.source>
+      <maven.compiler.target>1.8</maven.compiler.target>
   </properties>
 
   <dependencies>
@@ -115,9 +120,31 @@
       <version>${pdi.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- DEBUG adding dependencies fo compilation -->
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-jar-plugin</artifactId>
+      <version>3.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-install-plugin</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>2.0.2-beta</version> <!-- TODO this mockito-all is from 2015 update to org.mockito:mockito-core -->
+    </dependency>
+    <!-- DEBUG DEPENDS -->
   </dependencies>
 
   <build>
+    <!-- DEBUG setting source directory, since it doesn't follow convention -->
+    <sourceDirectory>./src/it/java</sourceDirectory>
+
+
     <plugins>
       <!-- No need package or install this -->
       <plugin>
@@ -138,6 +165,31 @@
           </execution>
         </executions>
       </plugin>
+
+      <!-- DEBUG so Tests.java and IT.java tests will run -->
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>2.22.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.2</version>
+        <configuration>
+          <excludes>
+            <exclude>**/*IntegrationTest</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+
     </plugins>
   </build>
 </project>
