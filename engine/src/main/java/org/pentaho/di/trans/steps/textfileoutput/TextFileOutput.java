@@ -639,6 +639,9 @@ public class TextFileOutput extends BaseStep implements StepInterface {
               && containsSeparatorOrEnclosure( str, data.binarySeparator, data.binaryEnclosure ) ) {
             writeEnclosures = true;
           }
+        }  else if (v.isNumeric() && !meta.isEnclosureFixDisabled()
+                && containsSeparatorOrEnclosure(str, data.binarySeparator, data.binaryEnclosure)) {
+          writeEnclosures = true;
         }
 
         if ( writeEnclosures ) {
