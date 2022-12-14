@@ -630,9 +630,9 @@ public class TextFileOutput extends BaseStep implements StepInterface {
 
       if ( str != null && str.length > 0 ) {
         List<Integer> enclosures = null;
-        boolean writeEnclosures = false;
+        boolean writeEnclosures = isWriteEnclosureForWriteField(v, str);;
 
-        if ( v.isString() ) {
+        /*if ( v.isString() ) {
           if ( meta.isEnclosureForced() && !meta.isPadded() ) {
             writeEnclosures = true;
           } else if ( !meta.isEnclosureFixDisabled()
@@ -642,7 +642,7 @@ public class TextFileOutput extends BaseStep implements StepInterface {
         }  else if (v.isNumeric() && !meta.isEnclosureFixDisabled()
                 && containsSeparatorOrEnclosure(str, data.binarySeparator, data.binaryEnclosure)) {
           writeEnclosures = true;
-        }
+        }*/
 
         if ( writeEnclosures ) {
           data.writer.write( data.binaryEnclosure );
@@ -732,10 +732,10 @@ public class TextFileOutput extends BaseStep implements StepInterface {
             data.writer.write( data.binarySeparator );
           }
 
-          boolean writeEnclosure =
-              ( meta.isEnclosureForced() && data.binaryEnclosure.length > 0 && v != null && v.isString() )
+          boolean writeEnclosure = isWriteEnclosureForFieldName(v, fieldName);
+              /*( meta.isEnclosureForced() && data.binaryEnclosure.length > 0 && v != null && v.isString() )
                   || ( ( !meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure( fieldName.getBytes(),
-                      data.binarySeparator, data.binaryEnclosure ) ) );
+                      data.binarySeparator, data.binaryEnclosure ) ) );*/
 
           if ( writeEnclosure ) {
             data.writer.write( data.binaryEnclosure );
@@ -758,10 +758,10 @@ public class TextFileOutput extends BaseStep implements StepInterface {
           }
           ValueMetaInterface v = r.getValueMeta( i );
 
-          boolean writeEnclosure =
-              ( meta.isEnclosureForced() && data.binaryEnclosure.length > 0 && v != null && v.isString() )
+          boolean writeEnclosure = isWriteEnclosureForValueMetaInterface(v);
+              /*( meta.isEnclosureForced() && data.binaryEnclosure.length > 0 && v != null && v.isString() )
                   || ( ( !meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure( v.getName().getBytes(),
-                      data.binarySeparator, data.binaryEnclosure ) ) );
+                      data.binarySeparator, data.binaryEnclosure ) ) );*/
 
           if ( writeEnclosure ) {
             data.writer.write( data.binaryEnclosure );
@@ -1035,6 +1035,28 @@ public class TextFileOutput extends BaseStep implements StepInterface {
         }
       }
     }
+  }
+
+  boolean isWriteEnclosureForFieldName(ValueMetaInterface v, String fieldName) {
+    return (isWriteEnclosed(v))
+            || ((!meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure(fieldName.getBytes(),
+            data.binarySeparator, data.binaryEnclosure)));
+  }
+
+  boolean isWriteEnclosureForValueMetaInterface(ValueMetaInterface v) {
+    return (isWriteEnclosed(v))
+            || ((!meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure(v.getName().getBytes(),
+            data.binarySeparator, data.binaryEnclosure)));
+  }
+
+  boolean isWriteEnclosureForWriteField(ValueMetaInterface v, byte[] str) {
+    return (meta.isEnclosureForced() && !meta.isPadded())
+            || ((!meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure(str,
+            data.binarySeparator, data.binaryEnclosure)));
+  }
+
+  boolean isWriteEnclosed(ValueMetaInterface v) {
+    return meta.isEnclosureForced() && data.binaryEnclosure.length > 0 && v != null && v.isString();
   }
 
   protected FileObject getFileObject( String vfsFilename ) throws KettleFileException {
