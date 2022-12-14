@@ -630,7 +630,11 @@ public class TextFileOutput extends BaseStep implements StepInterface {
 
       if ( str != null && str.length > 0 ) {
         List<Integer> enclosures = null;
-        boolean writeEnclosures = isWriteEnclosureForWriteField(v, str);;
+        // FIXME rename 'specialPaddingCondition' not sure on good name and add possible java comment
+        // TODO check that combining the isPadded() make sense and doesn't break any unit tests
+        boolean specialPaddingCondition = v.isString() && meta.isEnclosureForced() && !meta.isPadded();
+        boolean writeEnclosures = specialPaddingCondition || isWriteEnclosureHelperByteArray( v, str );
+
 
         /*if ( v.isString() ) {
           if ( meta.isEnclosureForced() && !meta.isPadded() ) {
@@ -1037,24 +1041,56 @@ public class TextFileOutput extends BaseStep implements StepInterface {
     }
   }
 
+  // TODO add unit tests for functions isWriteEnclosureXXX
+  /**
+   * TODO write javadoc comments
+   * @param v
+   * @param fieldName
+   * @return
+   */
   boolean isWriteEnclosureForFieldName(ValueMetaInterface v, String fieldName) {
-    return (isWriteEnclosed(v))
-            || ((!meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure(fieldName.getBytes(),
-            data.binarySeparator, data.binaryEnclosure)));
+//    return (isWriteEnclosed(v))
+//            || ((!meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure(fieldName.getBytes(),
+//            data.binarySeparator, data.binaryEnclosure)));
+    // NOTE: not copying the same logic, calling helper function which contains it
+    return isWriteEnclosureHelperByteArray(v, fieldName.getBytes());
   }
 
+  /**
+   * TODO write javadoc comments
+   * @param v
+   * @return
+   */
   boolean isWriteEnclosureForValueMetaInterface(ValueMetaInterface v) {
+//    return (isWriteEnclosed(v))
+//            || ((!meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure(v.getName().getBytes(),
+//            data.binarySeparator, data.binaryEnclosure)));
+    // NOTE: not copying the same logic, calling helper function which contains it
+    return isWriteEnclosureHelperByteArray(v, v.getName().getBytes());
+  }
+
+  /**
+   * TODO write javadoc comments
+   * @param v
+   * @return
+   */
+  // TODO rename not sure of good name
+  // NOTE: essentially helper function writeEnclosure logic
+  boolean isWriteEnclosureHelperByteArray(ValueMetaInterface v, byte[] str) {
     return (isWriteEnclosed(v))
-            || ((!meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure(v.getName().getBytes(),
+            || ((!meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure(str,
             data.binarySeparator, data.binaryEnclosure)));
   }
 
+  // FIXME I don't think this function is needed see my changes
+  @Deprecated
   boolean isWriteEnclosureForWriteField(ValueMetaInterface v, byte[] str) {
     return (meta.isEnclosureForced() && !meta.isPadded())
             || ((!meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure(str,
             data.binarySeparator, data.binaryEnclosure)));
   }
 
+  // NOTE: good idea to keep this as its own function, easier to write unit tests for and get high branch code coverage
   boolean isWriteEnclosed(ValueMetaInterface v) {
     return meta.isEnclosureForced() && data.binaryEnclosure.length > 0 && v != null && v.isString();
   }
