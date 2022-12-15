@@ -804,4 +804,88 @@ public class TextFileOutputTest {
     // VERIFY
     assertNotNull( textFileOutput.data.writer );
   }
+
+  @Test
+  public void testWriteEnclosedforValueMetaInterface() throws Exception {
+    TextFileOutputData data = new TextFileOutputData();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    data.writer = baos;
+    TextFileOutputMeta meta = new TextFileOutputMeta();
+    meta.setEndedLine( "${endvar}" );
+    meta.setDefault();
+    meta.setEncoding( StandardCharsets.UTF_8.name() );
+    stepMockHelper.stepMeta.setStepMetaInterface( meta );
+    TextFileOutput textFileOutput =
+            new TextFileOutputTestHandler( stepMockHelper.stepMeta, data, 0, stepMockHelper.transMeta,
+                    stepMockHelper.trans );
+    textFileOutput.meta = meta;
+    textFileOutput.data = data;
+    textFileOutput.setVariable( "endvar", "this is the end" );
+    textFileOutput.writeEndedLine();
+    textFileOutput.setVariable( "endvar", "this is the end" );
+    textFileOutput.writeEndedLine();
+    ValueMetaBase valueMetaInterface = new ValueMetaBase( "test", ValueMetaInterface.TYPE_STRING );
+    String inputEncode = StandardCharsets.UTF_8.name();
+    valueMetaInterface.setStringEncoding( inputEncode );
+    valueMetaInterface.setStorageType( ValueMetaInterface.STORAGE_TYPE_BINARY_STRING );
+    valueMetaInterface.setStorageMetadata( new ValueMetaString() );
+    assertFalse(textFileOutput.isWriteEnclosureForValueMetaInterface(valueMetaInterface));
+  }
+
+  @Test
+  public void testWriteEnclosedforFieldName() throws Exception {
+    TextFileOutputData data = new TextFileOutputData();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    data.writer = baos;
+    TextFileOutputMeta meta = new TextFileOutputMeta();
+    meta.setEndedLine( "${endvar}" );
+    meta.setDefault();
+    meta.setEncoding( StandardCharsets.UTF_8.name() );
+    stepMockHelper.stepMeta.setStepMetaInterface( meta );
+    TextFileOutput textFileOutput =
+            new TextFileOutputTestHandler( stepMockHelper.stepMeta, data, 0, stepMockHelper.transMeta,
+                    stepMockHelper.trans );
+    textFileOutput.meta = meta;
+    textFileOutput.data = data;
+    textFileOutput.setVariable( "endvar", "this is the end" );
+    textFileOutput.writeEndedLine();
+    textFileOutput.setVariable( "endvar", "this is the end" );
+    textFileOutput.writeEndedLine();
+    ValueMetaBase valueMetaInterface = new ValueMetaBase( "test", ValueMetaInterface.TYPE_STRING );
+    String inputEncode = StandardCharsets.UTF_8.name();
+    valueMetaInterface.setStringEncoding( inputEncode );
+    valueMetaInterface.setStorageType( ValueMetaInterface.STORAGE_TYPE_BINARY_STRING );
+    valueMetaInterface.setStorageMetadata( new ValueMetaString() );
+    assertFalse(textFileOutput.isWriteEnclosureForFieldName(valueMetaInterface, "fieldName"));
+  }
+
+  @Test
+  public void testWriteEnclosedforWriteField() throws Exception {
+    TextFileOutputData data = new TextFileOutputData();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    data.writer = baos;
+    TextFileOutputMeta meta = new TextFileOutputMeta();
+    meta.setEndedLine( "${endvar}" );
+    meta.setDefault();
+    meta.setEnclosureForced(true);
+    meta.setPadded(false);
+    meta.setEncoding( StandardCharsets.UTF_8.name() );
+    stepMockHelper.stepMeta.setStepMetaInterface( meta );
+    TextFileOutput textFileOutput =
+            new TextFileOutputTestHandler( stepMockHelper.stepMeta, data, 0, stepMockHelper.transMeta,
+                    stepMockHelper.trans );
+    textFileOutput.meta = meta;
+    textFileOutput.data = data;
+    textFileOutput.setVariable( "endvar", "this is the end" );
+    textFileOutput.writeEndedLine();
+    textFileOutput.setVariable( "endvar", "this is the end" );
+    textFileOutput.writeEndedLine();
+    ValueMetaBase valueMetaInterface = new ValueMetaBase( "test", ValueMetaInterface.TYPE_STRING );
+    String inputEncode = StandardCharsets.UTF_8.name();
+    valueMetaInterface.setStringEncoding( inputEncode );
+    valueMetaInterface.setStorageType( ValueMetaInterface.STORAGE_TYPE_BINARY_STRING );
+    valueMetaInterface.setStorageMetadata( new ValueMetaString() );
+    byte[] str = new byte[10];
+    assertTrue(textFileOutput.isWriteEnclosureForWriteField(valueMetaInterface, str));
+  }
 }
