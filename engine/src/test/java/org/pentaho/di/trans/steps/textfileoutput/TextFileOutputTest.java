@@ -808,6 +808,8 @@ public class TextFileOutputTest {
   @Test
   public void testWriteEnclosedforValueMetaInterface() throws Exception {
     TextFileOutputData data = new TextFileOutputData();
+    data.binarySeparator = new byte[1];
+    data.binaryEnclosure = new byte[1];
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     data.writer = baos;
     TextFileOutputMeta meta = new TextFileOutputMeta();
@@ -835,6 +837,8 @@ public class TextFileOutputTest {
   @Test
   public void testWriteEnclosedforFieldName() throws Exception {
     TextFileOutputData data = new TextFileOutputData();
+    data.binarySeparator = new byte[1];
+    data.binaryEnclosure = new byte[1];
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     data.writer = baos;
     TextFileOutputMeta meta = new TextFileOutputMeta();
@@ -862,12 +866,14 @@ public class TextFileOutputTest {
   @Test
   public void testWriteEnclosedforWriteField() throws Exception {
     TextFileOutputData data = new TextFileOutputData();
+    data.binarySeparator = new byte[1];
+    data.binaryEnclosure = new byte[1];
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     data.writer = baos;
     TextFileOutputMeta meta = new TextFileOutputMeta();
     meta.setEndedLine( "${endvar}" );
     meta.setDefault();
-    meta.setEnclosureForced(true);
+    meta.setEnclosureForced(false);
     meta.setPadded(false);
     meta.setEncoding( StandardCharsets.UTF_8.name() );
     stepMockHelper.stepMeta.setStepMetaInterface( meta );
@@ -885,7 +891,7 @@ public class TextFileOutputTest {
     valueMetaInterface.setStringEncoding( inputEncode );
     valueMetaInterface.setStorageType( ValueMetaInterface.STORAGE_TYPE_BINARY_STRING );
     valueMetaInterface.setStorageMetadata( new ValueMetaString() );
-    byte[] str = new byte[10];
+    byte[] str = new byte[1];
     assertTrue(textFileOutput.isWriteEnclosureForWriteField(valueMetaInterface, str));
   }
 }
