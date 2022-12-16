@@ -812,11 +812,7 @@ public class TextFileOutputTest {
     data.binaryEnclosure = new byte[1];
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     data.writer = baos;
-    TextFileOutputMeta meta = new TextFileOutputMeta();
-    meta.setEndedLine( "${endvar}" );
-    meta.setDefault();
-    meta.setEncoding( StandardCharsets.UTF_8.name() );
-    stepMockHelper.stepMeta.setStepMetaInterface( meta );
+    TextFileOutputMeta meta = getTextFileOutputMeta();
     TextFileOutput textFileOutput =
             new TextFileOutputTestHandler( stepMockHelper.stepMeta, data, 0, stepMockHelper.transMeta,
                     stepMockHelper.trans );
@@ -841,10 +837,7 @@ public class TextFileOutputTest {
     data.binaryEnclosure = new byte[1];
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     data.writer = baos;
-    TextFileOutputMeta meta = new TextFileOutputMeta();
-    meta.setEndedLine( "${endvar}" );
-    meta.setDefault();
-    meta.setEncoding( StandardCharsets.UTF_8.name() );
+    TextFileOutputMeta meta = getTextFileOutputMeta();
     stepMockHelper.stepMeta.setStepMetaInterface( meta );
     TextFileOutput textFileOutput =
             new TextFileOutputTestHandler( stepMockHelper.stepMeta, data, 0, stepMockHelper.transMeta,
@@ -864,18 +857,13 @@ public class TextFileOutputTest {
   }
 
   @Test
-  public void testWriteEnclosedforWriteField() throws Exception {
+  public void testWriteEnclosedforWriteFieldWithSeparator() throws Exception {
     TextFileOutputData data = new TextFileOutputData();
     data.binarySeparator = new byte[1];
     data.binaryEnclosure = new byte[1];
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     data.writer = baos;
-    TextFileOutputMeta meta = new TextFileOutputMeta();
-    meta.setEndedLine( "${endvar}" );
-    meta.setDefault();
-    meta.setEnclosureForced(false);
-    meta.setPadded(false);
-    meta.setEncoding( StandardCharsets.UTF_8.name() );
+    TextFileOutputMeta meta = getTextFileOutputMeta();
     stepMockHelper.stepMeta.setStepMetaInterface( meta );
     TextFileOutput textFileOutput =
             new TextFileOutputTestHandler( stepMockHelper.stepMeta, data, 0, stepMockHelper.transMeta,
@@ -893,5 +881,40 @@ public class TextFileOutputTest {
     valueMetaInterface.setStorageMetadata( new ValueMetaString() );
     byte[] str = new byte[1];
     assertTrue(textFileOutput.isWriteEnclosureForWriteField(valueMetaInterface, str));
+  }
+
+  @Test
+  public void testWriteEnclosedforWriteFieldWithoutSeparator() throws Exception {
+    TextFileOutputData data = new TextFileOutputData();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    data.writer = baos;
+    TextFileOutputMeta meta = getTextFileOutputMeta();
+    stepMockHelper.stepMeta.setStepMetaInterface( meta );
+    TextFileOutput textFileOutput =
+            new TextFileOutputTestHandler( stepMockHelper.stepMeta, data, 0, stepMockHelper.transMeta,
+                    stepMockHelper.trans );
+    textFileOutput.meta = meta;
+    textFileOutput.data = data;
+    textFileOutput.setVariable( "endvar", "this is the end" );
+    textFileOutput.writeEndedLine();
+    textFileOutput.setVariable( "endvar", "this is the end" );
+    textFileOutput.writeEndedLine();
+    ValueMetaBase valueMetaInterface = new ValueMetaBase( "test", ValueMetaInterface.TYPE_STRING );
+    String inputEncode = StandardCharsets.UTF_8.name();
+    valueMetaInterface.setStringEncoding( inputEncode );
+    valueMetaInterface.setStorageType( ValueMetaInterface.STORAGE_TYPE_BINARY_STRING );
+    valueMetaInterface.setStorageMetadata( new ValueMetaString() );
+    byte[] str = new byte[1];
+    assertFalse(textFileOutput.isWriteEnclosureForWriteField(valueMetaInterface, str));
+  }
+
+  public TextFileOutputMeta getTextFileOutputMeta() {
+    TextFileOutputMeta meta = new TextFileOutputMeta();
+    meta.setEndedLine( "${endvar}" );
+    meta.setDefault();
+    meta.setEnclosureForced(false);
+    meta.setPadded(false);
+    meta.setEncoding( StandardCharsets.UTF_8.name() );
+    return meta;
   }
 }
