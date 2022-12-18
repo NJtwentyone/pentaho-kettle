@@ -1039,20 +1039,29 @@ public class TextFileOutput extends BaseStep implements StepInterface {
 
   boolean isWriteEnclosureForFieldName(ValueMetaInterface v, String fieldName) {
     return (isWriteEnclosed(v))
-            || ((!meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure(fieldName.getBytes(),
-            data.binarySeparator, data.binaryEnclosure)));
+            || isWriteEnclosureHelperByteArray( fieldName.getBytes() );
   }
 
   boolean isWriteEnclosureForValueMetaInterface(ValueMetaInterface v) {
     return (isWriteEnclosed(v))
-            || ((!meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure(v.getName().getBytes(),
-            data.binarySeparator, data.binaryEnclosure)));
+            || isWriteEnclosureHelperByteArray( v.getName().getBytes() );
   }
 
   boolean isWriteEnclosureForWriteField(ValueMetaInterface v, byte[] str) {
     return (meta.isEnclosureForced() && !meta.isPadded())
-            || ((!meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure(str,
-            data.binarySeparator, data.binaryEnclosure)));
+            || isWriteEnclosureHelperByteArray( str );
+  }
+
+  /**
+   * TODO write javadoc comments
+   * @param str
+   * @return
+   */
+  // TODO rename not sure of good name
+  // NOTE: essentially helper function writeEnclosure logic
+  boolean isWriteEnclosureHelperByteArray( byte[] str) {
+    return !meta.isEnclosureFixDisabled() && containsSeparatorOrEnclosure(str,
+            data.binarySeparator, data.binaryEnclosure);
   }
 
   boolean isWriteEnclosed(ValueMetaInterface v) {
