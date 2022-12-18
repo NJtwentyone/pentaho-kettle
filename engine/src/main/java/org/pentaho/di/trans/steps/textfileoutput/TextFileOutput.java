@@ -630,8 +630,8 @@ public class TextFileOutput extends BaseStep implements StepInterface {
 
       if ( str != null && str.length > 0 ) {
         List<Integer> enclosures = null;
-        boolean writeEnclosures = isWriteEnclosureForWriteField(v, str);;
-
+        boolean writeEnclosures = isWriteEnclosureForWriteField(v, str);; // FIXME remove extra ;
+// TODO remove commented out code
         /*if ( v.isString() ) {
           if ( meta.isEnclosureForced() && !meta.isPadded() ) {
             writeEnclosures = true;
@@ -1037,6 +1037,7 @@ public class TextFileOutput extends BaseStep implements StepInterface {
     }
   }
 
+  // TODO ensure checkstyle is happening, see #getFileObject( String ) for spacing
   boolean isWriteEnclosureForFieldName(ValueMetaInterface v, String fieldName) {
     return (isWriteEnclosed(v))
             || isWriteEnclosureHelperByteArray( fieldName.getBytes() );
@@ -1046,7 +1047,7 @@ public class TextFileOutput extends BaseStep implements StepInterface {
     return (isWriteEnclosed(v))
             || isWriteEnclosureHelperByteArray( v.getName().getBytes() );
   }
-
+//FIXME param v is not used, remove v
   boolean isWriteEnclosureForWriteField(ValueMetaInterface v, byte[] str) {
     return (meta.isEnclosureForced() && !meta.isPadded())
             || isWriteEnclosureHelperByteArray( str );
