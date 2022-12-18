@@ -859,8 +859,8 @@ public class TextFileOutputTest {
   @Test
   public void testWriteEnclosedforWriteFieldWithSeparator() throws Exception {
     TextFileOutputData data = new TextFileOutputData();
-    data.binarySeparator = new byte[1];
-    data.binaryEnclosure = new byte[1];
+    data.binarySeparator = ",".getBytes(StandardCharsets.UTF_8); // using comma separator
+    data.binaryEnclosure = "\"".getBytes(StandardCharsets.UTF_8); // using double quote enclosure
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     data.writer = baos;
     TextFileOutputMeta meta = getTextFileOutputMeta();
@@ -879,13 +879,15 @@ public class TextFileOutputTest {
     valueMetaInterface.setStringEncoding( inputEncode );
     valueMetaInterface.setStorageType( ValueMetaInterface.STORAGE_TYPE_BINARY_STRING );
     valueMetaInterface.setStorageMetadata( new ValueMetaString() );
-    byte[] str = new byte[1];
+    byte[] str = "1,234".getBytes(StandardCharsets.UTF_8); // using comma separator
     assertTrue(textFileOutput.isWriteEnclosureForWriteField(valueMetaInterface, str));
   }
 
   @Test
   public void testWriteEnclosedforWriteFieldWithoutSeparator() throws Exception {
     TextFileOutputData data = new TextFileOutputData();
+    data.binarySeparator = ",".getBytes(StandardCharsets.UTF_8); // using comma separator
+    data.binaryEnclosure = "\"".getBytes(StandardCharsets.UTF_8); // using double quote enclosure
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     data.writer = baos;
     TextFileOutputMeta meta = getTextFileOutputMeta();
@@ -904,7 +906,7 @@ public class TextFileOutputTest {
     valueMetaInterface.setStringEncoding( inputEncode );
     valueMetaInterface.setStorageType( ValueMetaInterface.STORAGE_TYPE_BINARY_STRING );
     valueMetaInterface.setStorageMetadata( new ValueMetaString() );
-    byte[] str = new byte[1];
+    byte[] str = "567".getBytes(StandardCharsets.UTF_8); // using comma separator is not present
     assertFalse(textFileOutput.isWriteEnclosureForWriteField(valueMetaInterface, str));
   }
 
