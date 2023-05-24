@@ -57,6 +57,11 @@ public class ConnectionManager {
     return instance;
   }
 
+  // POC
+  public IMetaStore getMetaStore() {
+    return metaStoreSupplier.get();
+  }
+
   /**
    * Construct a meta store factory for a specific class using the default meta store supplier
    *
