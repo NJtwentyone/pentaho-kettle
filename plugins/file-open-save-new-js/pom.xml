@@ -9,11 +9,11 @@
     <version>9.5.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>file-open-save-new</artifactId>
+  <artifactId>file-open-save-new-js</artifactId>
   <version>9.5.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>PDI File Open and Save New Plugin</name>
+  <name>PDI File Open and Save New Plugin Javascript!</name>
 
   <modules>
     <module>api</module>
