@@ -23,7 +23,7 @@
 package org.pentaho.di.plugins.fileopensave.extension;
 
 import org.pentaho.di.core.extension.ExtensionPoint;
-import org.pentaho.osgi.metastore.locator.api.MetastoreLocator;
+import org.pentaho.metastore.locator.api.MetastoreLocator;
 
 /**
  * An extension point for handling import of named connections from the embedded meta store

@@ -25,7 +25,7 @@ package org.pentaho.di.plugins.fileopensave.extension;
 import org.pentaho.di.base.AbstractMeta;
 import org.pentaho.di.connections.ConnectionManager;
 import org.pentaho.di.core.extension.ExtensionPointInterface;
-import org.pentaho.osgi.metastore.locator.api.MetastoreLocator;
+import org.pentaho.metastore.locator.api.MetastoreLocator;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
