@@ -1,5 +1,5 @@
 {
-  "name": "@pentaho/di-plugin-file-open-save-new",
+  "name": "@pentaho/di-plugin-file-open-save-new-js",
   "version": "${project.version}",
   "description": "${project.description}",
   "paths": {
