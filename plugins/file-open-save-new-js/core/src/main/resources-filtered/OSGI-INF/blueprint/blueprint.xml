@@ -47,7 +47,9 @@
       <bean class="org.pentaho.di.plugins.fileopensave.endpoints.JsonProvider">
         <argument ref="providerService" />
       </bean>
-      <bean class="org.pentaho.di.ui.repo.endpoints.WebSpoonFilter"/>
+      <!-- FIXME most likely no longer needed -->
+      <!-- FILE Moved to https://github.com/pentaho/big-data-plugin/blob/29e93736c8fea039a5bc380a5016873affb854eb/kettle-plugins/hadoop-cluster/ui/src/main/java/org/pentaho/big/data/kettle/plugins/hadoopcluster/ui/endpoints/WebSpoonFilter.java#L37 -->
+      <!--<bean class="org.pentaho.di.ui.repo.endpoints.WebSpoonFilter"/>-->
     </jaxrs:providers>
 
   </jaxrs:server>
