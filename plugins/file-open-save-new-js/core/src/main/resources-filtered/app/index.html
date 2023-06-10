@@ -21,7 +21,11 @@
           PDI: is http://localhost:9051/@pentaho/
       should be better way or all relative to this file index.html to avoid
 
-      IS_RUNNING_ON_WEBSPOON_MODE was attempting to fix this, not sure how to set variable
+      IS_RUNNING_ON_WEBSPOON_MODE was attempting to fix this
+      need corresponding code in WebContextServlet.java to inject variables
+      see - https://github.com/pentaho/pentaho-osgi-bundles/blob/986e3fb28b4e0c433d8616ea6cbfe600b7844c85/pentaho-pdi-platform/src/main/java/org/pentaho/platform/pdi/WebContextServlet.java#L104
+
+      Need to find a better way, that utlizes local configuration files, not hard coded values in external/third part code/services
       */
       var basePath = "";
       // if ( IS_RUNNING_ON_WEBSPOON_MODE ) {
@@ -45,7 +49,8 @@
           "pentaho": basePath + "/@pentaho/di-core-ui@${project.version}/pentaho",
           "css": basePath + "/require-css@${require-css.version}/css",
           "text": basePath + "/requirejs-text@${requirejs-text.version}/text",
-          "dojo": basePath + "/dojo@${dojo.version}"
+          "dojo": basePath + "/dojo@${dojo.version}",
+          "pentaho/i18n-osgi": basePath + "/@pentaho/i18n-osgi@${project.version}/js/i18n" // FIXME use require.comfig.baseUrl
         }
       });
 
