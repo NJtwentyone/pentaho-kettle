@@ -13,7 +13,7 @@
   <version>9.6.0.0-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
-  <name>PDI File Open and Save New Plugin Core</name>
+  <name>PDI File Open and Save New Plugin JS Core</name>
 
   <properties>
     <maven-replacer-plugin.version>1.5.2</maven-replacer-plugin.version>
