@@ -38,6 +38,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -2255,18 +2256,18 @@ public class Trans implements VariableSpace, NamedParams, HasLogChannelInterface
         // Do this first, before anything else to lock the complete table exclusively
         //
         if ( transLogTable.isBatchIdUsed() ) {
-          Long id_batch =
-            logConnection.getNextBatchId( transLogTableDatabaseConnection, logSchema, logTable, transLogTable
-              .getKeyField().getFieldName() );
+          Long id_batch = new Random().nextLong(); // TODO DEBUG testing out removing I/O performance hit of database query to live_logging_info
+//            logConnection.getNextBatchId( transLogTableDatabaseConnection, logSchema, logTable, transLogTable
+//              .getKeyField().getFieldName() );
           setBatchId( id_batch.longValue() );
         }
 
         //
         // Get the date range from the logging table: from the last end_date to now. (currentDate)
         //
-        Object[] lastr =
-          transLogTableDatabaseConnection.getLastLogDate( logSchemaAndTable, transMeta.getName(), false,
-            LogStatus.END );
+        Object[] lastr = new Object[]{new Date()}; // TODO DEBUG testing out removing I/O performance hit of database query to live_logging_info
+//          transLogTableDatabaseConnection.getLastLogDate( logSchemaAndTable, transMeta.getName(), false,
+//            LogStatus.END );
         if ( lastr != null && lastr.length > 0 ) {
           startDate = (Date) lastr[ 0 ];
           if ( log.isDetailed() ) {
