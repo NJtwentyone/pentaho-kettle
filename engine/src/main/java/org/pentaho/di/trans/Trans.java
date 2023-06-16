@@ -2255,8 +2255,8 @@ public class Trans implements VariableSpace, NamedParams, HasLogChannelInterface
         // See if we have to add a batch id...
         // Do this first, before anything else to lock the complete table exclusively
         //
-        if ( transLogTable.isBatchIdUsed() ) {
-          Long id_batch = new Random().nextLong(); // TODO DEBUG testing out removing I/O performance hit of database query to live_logging_info
+        if ( transLogTable.isBatchIdUsed() ) { // TODO why can't psql batch id logic handle large longs ie (new Date().getTime()), workaround using smaller longs ie 5 digits like 24640 range --> [10,000 - 24,640]
+          Long id_batch = (long) ( new Random().nextInt( 14640 ) + 10000 );   // TODO DEBUG testing out removing I/O performance hit of database query to live_logging_info
 //            logConnection.getNextBatchId( transLogTableDatabaseConnection, logSchema, logTable, transLogTable
 //              .getKeyField().getFieldName() );
           setBatchId( id_batch.longValue() );
