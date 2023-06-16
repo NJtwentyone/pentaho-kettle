@@ -142,7 +142,7 @@ public class LoggingBuffer {
   }
 
   public StringBuffer getBuffer( String parentLogChannelId, boolean includeGeneral, int startLineNr ) {
-    return getBuffer( parentLogChannelId, includeGeneral, startLineNr, getLastBufferLineNr() );
+    return getBuffer( parentLogChannelId, includeGeneral, startLineNr, /* getLastBufferLineNr()*/ Integer.MAX_VALUE ); // TODO DEBUG avoiding accessing lock twice, in getLastBufferLineNr() and then later in getBuffer(...)
   }
 
   public StringBuffer getBuffer() {
