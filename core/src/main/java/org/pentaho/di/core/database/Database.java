@@ -3694,8 +3694,91 @@ public class Database implements VariableSpace, LoggingObjectInterface, Closeabl
       pstmt = connection.prepareStatement( databaseMeta.stripCR( sql ) );
 
       RowMetaInterface r = new RowMeta();
+      r.addValueMeta( new ValueMetaString( "TRANSNAME", 255, -1 ) ); // FIXME why isn't there an if statement for "JOBNAME"
+      setValues( r, new Object[] { name } );
+
+      try ( ResultSet res = pstmt.executeQuery() ) {
+        rowMeta = getRowInfo( res.getMetaData(), false, false );
+        row = getRow( res );
+      }
+    } catch ( SQLException ex ) {
+      throw new KettleDatabaseException( "Unable to obtain last logdate from table " + logtable, ex );
+    }
+
+    return row;
+  }
+
+  public Object[] getLastLogDatePOC( String logtable, String name, boolean job, LogStatus status )
+    throws KettleDatabaseException {
+    Object[] row = null;
+
+    String jobtrans = job ? databaseMeta.quoteField( "JOBNAME" ) : databaseMeta.quoteField( "TRANSNAME" );
+
+    String sql = ""; // FIXME use stringbuilder or string format
+    sql +=
+      " SELECT "
+        + databaseMeta.quoteField( "ENDDATE" ); /*+ ", " + databaseMeta.quoteField( "DEPDATE" ) + ", "
+        + databaseMeta.quoteField( "STARTDATE" );*/ // NOTE: aren't use other fields in Trans.calculateBatchIdAndDateRange()
+    sql += " FROM " + logtable;
+    sql += " WHERE  " + databaseMeta.quoteField( "ERRORS" ) + "    = 0";
+    sql += " AND    " + databaseMeta.quoteField( "STATUS" ) + "    = 'end'";
+    sql += " AND    " + jobtrans + " = ?";
+    sql +=
+      " ORDER BY " // NOTE: in order to use new multi column index for postgres (error, status, transname/jobname, enddate) have to get rid of logdate order
+        /*+ databaseMeta.quoteField( "LOGDATE" ) + " DESC, "*/ + databaseMeta.quoteField( "ENDDATE" ) + " DESC";
+
+    sql += " LIMIT 1"; // NOTE: only want top result
+    /*
+      example final query:
+         SELECT ENDDATE FROM pentaho_dilogs.trans_logs WHERE ERRORS = 0 AND STATUS = 'end' AND TRANSNAME = 'Action' ORDER BY ENDDATE  DESC LIMIT 1
+     */
+
+    /*
+      TODO investigate how to impose SQL clause to "only return the one result"
+      Different sql database support different SQL clauses: https://www.w3schools.com/sql/sql_top.asp
+        Oracle doesn't have limit uses 'ROWNUM = 1'.
+       https://blogs.oracle.com/connect/post/on-rownum-and-limiting-results
+       Not sure if oracle's prepared statement driver implementing class will automatically convert LIMIT syntax to ROWNUM
+       OR if Pentaho has to put in if/else logic
+     */
+    /**
+     * NOTE: this only works with created indexes
+
+     -- trans index more important dealing with 100k+
+
+     CREATE INDEX IF NOT EXISTS idx_trans_logs_4_poc
+     ON pentaho_dilogs.trans_logs USING btree
+     (errors ASC NULLS LAST, status COLLATE pg_catalog."default" ASC NULLS LAST, transname COLLATE pg_catalog."default" ASC NULLS LAST,
+     -- adding end index due to order by
+     enddate DESC NULLS LAST)
+     TABLESPACE pg_default;
+
+     CREATE INDEX IF NOT EXISTS idx_job_logs_3_poc
+     ON pentaho_dilogs.job_logs USING btree
+     (errors ASC NULLS LAST, status COLLATE pg_catalog."default" ASC NULLS LAST, jobname COLLATE pg_catalog."default" ASC NULLS LAST,
+     -- adding end index due to order by
+     enddate DESC NULLS LAST)
+     TABLESPACE pg_default;
+     commit;
+     */
+    /**
+     * TODO investigate application creation and use of enddate and logdate, can above optimiziation be applied
+     * quick db query, seem they are created closely, possibly created at the same time.
+     */
+
+
+    try {
+      pstmt = connection.prepareStatement( databaseMeta.stripCR( sql ) );
+
+      RowMetaInterface r = new RowMeta();
       r.addValueMeta( new ValueMetaString( "TRANSNAME", 255, -1 ) );
       setValues( r, new Object[] { name } );
+
+      /**
+       * TODO look into resulSet#setFetch for further optimization
+       * https://docs.oracle.com/javase/8/docs/api/java/sql/ResultSet.html#setFetchSize-int-
+       * https://stackoverflow.com/questions/1318354/what-does-statement-setfetchsizensize-method-really-do-in-sql-server-jdbc-driv
+       */
 
       try ( ResultSet res = pstmt.executeQuery() ) {
         rowMeta = getRowInfo( res.getMetaData(), false, false );

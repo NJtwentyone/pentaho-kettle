@@ -2264,9 +2264,9 @@ public class Trans implements VariableSpace, NamedParams, HasLogChannelInterface
         //
         // Get the date range from the logging table: from the last end_date to now. (currentDate)
         //
-        Object[] lastr =
-          transLogTableDatabaseConnection.getLastLogDate( logSchemaAndTable, transMeta.getName(), false,
-            LogStatus.END );
+        Object[] lastr = /* trying new function */
+         /* transLogTableDatabaseConnection.getLastLogDate( logSchemaAndTable, transMeta.getName(), false,
+            LogStatus.END );*/ transLogTableDatabaseConnection.getLastLogDatePOC( logSchemaAndTable, transMeta.getName(), false, LogStatus.END );
         if ( lastr != null && lastr.length > 0 ) {
           startDate = (Date) lastr[ 0 ];
           if ( log.isDetailed() ) {
