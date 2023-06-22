@@ -77,7 +77,7 @@ public class LoggingBufferCoordinator extends LoggingBuffer {
 //    } finally {
 //      lock.readLock().unlock();
 //    }
-    return -1;
+    return Integer.MAX_VALUE; // TODO not sure if this is needed for LoggingBufferCoordinator or new LoggingBuffers
   }
 
   /**
@@ -166,6 +166,12 @@ public class LoggingBufferCoordinator extends LoggingBuffer {
 //        lock.writeLock().unlock();
 //      }
 //    }
+    String logChannelId = getLogChId( event );
+    // TODO what size should these smaller LoggingBuffer get?
+    LoggingBuffer loggingBuffer = coodinatorMap.getOrDefault( logChannelId, new LoggingBuffer(coodinatorBufferSize) );
+    loggingBuffer.doAppend( event );
+    coodinatorMap.putIfAbsent( logChannelId, loggingBuffer );
+
   }
 
   public void setName( String name ) {
