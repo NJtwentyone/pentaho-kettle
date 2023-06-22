@@ -56,6 +56,11 @@ public class LoggingBuffer {
 
   private LoggingRegistry loggingRegistry = LoggingRegistry.getInstance();
 
+//  LoggingBuffer() {
+//    // FIXME created just for POC
+//    // TODO remove 'LoggingBufferCoordinator extends LoggingBuffer' - implement interface or abstract class
+//  }
+
   public LoggingBuffer( int bufferSize ) {
     this.bufferSize = bufferSize;
     // The buffer overflow protection allows it to be overflowed for 1 item within a single thread.
@@ -346,7 +351,12 @@ public class LoggingBuffer {
     return loggingObject != null && LoggingObjectType.GENERAL.equals( loggingObject.getObjectType() );
   }
 
-  private static String getLogChId( BufferLine bufferLine ) {
-    return ( (LogMessage) bufferLine.getEvent().getMessage() ).getLogChannelId();
+  // TODO move to interface or abstract class
+  protected static String getLogChId( BufferLine bufferLine ) {
+    return getLogChId( bufferLine.getEvent() );
+  }
+
+  protected static String getLogChId( KettleLoggingEvent event ) {
+    return ( (LogMessage) event.getMessage() ).getLogChannelId();
   }
 }
