@@ -103,7 +103,7 @@ public class LoggingBufferCoordinator extends LoggingBuffer {
 //    } finally {
 //      lock.readLock().unlock();
 //    }
-    return null;
+    return null; // TODO see implementation of LoggingBufferCoordinator$doAppend
   }
 
   /**
