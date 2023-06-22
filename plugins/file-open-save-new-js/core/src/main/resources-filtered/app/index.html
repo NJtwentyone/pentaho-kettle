@@ -27,6 +27,12 @@
 
       Need to find a better way, that utlizes local configuration files, not hard coded values in external/third part code/services
       */
+
+
+      var fullUrl = window.location.href;
+      var  pentahoClientPath = "${pentaho.client.path}";
+      var myIndex = fullUrl.indexOf(pentahoClientPath);
+      let newBaseUrl = fullUrl.slice(0, myIndex);
       var basePath = "";
       // if ( IS_RUNNING_ON_WEBSPOON_MODE ) {
          basePath = "../..";
