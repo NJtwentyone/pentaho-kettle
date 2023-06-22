@@ -32,6 +32,9 @@
     <dojo.version>1.9.2</dojo.version>
     <dependency.javax.servlet-api.version>3.0.1</dependency.javax.servlet-api.version>
     <dependency.javax.ws.rs-api.version>2.0</dependency.javax.ws.rs-api.version>
+    <!-- very important for determining the base url for the app and other endpoints like cxf -->
+    <!-- needs to be same as OSGI-INF/project.properties & used in index.html -->
+    <pentaho.client.path>/@pentaho/di-plugin-file-open-save-new-js@${project.version}/index.html</pentaho.client.path>
   </properties>
   <dependencyManagement>
     <dependencies>
