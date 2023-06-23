@@ -32,13 +32,7 @@
       <groupId>pentaho-kettle</groupId>
       <artifactId>kettle-engine</artifactId>
     </dependency>
-    <dependency>
-      <!--<groupId>pentaho</groupId>-->
-      <!-- in 9.4 groupId changed -->
-      <groupId>org.pentaho.di.plugins</groupId>
-      <artifactId>pentaho-metastore-locator-api</artifactId>
-      <version>${pdi.version}</version>
-    </dependency>
+<!-- NOTE: deleted pentaho-metastore-locator-api only needed for some Extentions points that were deleted (ie org/pentaho/di/plugins/fileopensave/extension/JobAfterOpenExtensionPoint.java)-->
     <dependency>
       <groupId>org.pentaho.di.plugins</groupId>
       <artifactId>file-open-save-new-js-api</artifactId>
@@ -176,7 +170,7 @@
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Bundle-Version>${project.version}</Bundle-Version>
-            <Import-Package>org.apache.xerces.parsers, org.pentaho.di.osgi, *</Import-Package>
+            <Import-Package>org.apache.xerces.parsers, org.pentaho.di.osgi,*</Import-Package>
             <Provide-Capability>
               org.pentaho.webpackage;root=/app
             </Provide-Capability>
