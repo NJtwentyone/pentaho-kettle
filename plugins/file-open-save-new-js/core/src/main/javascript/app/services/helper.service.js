@@ -133,7 +133,7 @@ define(
           } else {
             url += "?v=" + value;
           }
-          return url;
+          return "/pentaho/osgi"+ url; // FIXME find better solution
         }
       }
     });
