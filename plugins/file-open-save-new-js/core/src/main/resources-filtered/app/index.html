@@ -28,11 +28,17 @@
       Need to find a better way, that utlizes local configuration files, not hard coded values in external/third part code/services
       */
 
-
+      /*
+      *  TODO possible better solution than above mentioned https://github.com/pentaho/pentaho-osgi-bundles
+      * pass 'osgiContextPath' to each module
+      * OR turn this logic into a module like 'data.servie.js'
+      * OR somtthing else
+      */
       var fullUrl = window.location.href;
-      var  pentahoClientPath = "${pentaho.client.path}";
+      var pentahoClientPath = "${pentaho.client.path}"; // NOTE: filled my maven during compilation, see project's pom.xml <properties>
       var myIndex = fullUrl.indexOf(pentahoClientPath);
-      let newBaseUrl = fullUrl.slice(0, myIndex);
+      var osgiBaseUrl = fullUrl.slice(0, myIndex);
+      var osgiContextPath = osgiBaseUrl.replace(window.location.origin, ""); // either "" for pdi or "/pentaho/osgi" for PUC
       var basePath = "";
       // if ( IS_RUNNING_ON_WEBSPOON_MODE ) {
          basePath = "../..";
@@ -57,7 +63,12 @@
           "text": basePath + "/requirejs-text@${requirejs-text.version}/text",
           "dojo": basePath + "/dojo@${dojo.version}",
           "pentaho/i18n-osgi": basePath + "/@pentaho/i18n-osgi@${project.version}/js/i18n" // FIXME use require.comfig.baseUrl
-        }
+        },
+        config: {
+          'data/service' : {
+            contextPath: osgiContextPath // TODO verify correct path - https://requirejs.org/docs/api.html#config-moduleconfig
+          }
+        },
       });
 
       require(["pentaho/di/plugin/fileOpenSaveNew"], function (app) {
