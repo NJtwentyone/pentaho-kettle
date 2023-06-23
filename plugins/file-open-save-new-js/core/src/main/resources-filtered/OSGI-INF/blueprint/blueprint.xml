@@ -3,7 +3,8 @@
            xmlns:pen="http://www.pentaho.com/xml/schemas/pentaho-blueprint"
            xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs" default-timeout="20000">
 
-  <reference id="metaStoreLocator" interface="org.pentaho.metastore.locator.api.MetastoreLocator" />
+<!-- DEBUG dont need metaStoreLocator since we deleted the extentions points -->
+  <!-- <reference id="metaStoreLocator" interface="org.pentaho.metastore.locator.api.MetastoreLocator" /> -->
 
   <bean id="repositoryBrowserController" scope="singleton"
         class="org.pentaho.di.plugins.fileopensave.controllers.RepositoryBrowserController">
@@ -60,6 +61,7 @@
     <pen:di-plugin type="org.pentaho.di.core.extension.ExtensionPointPluginType"/>
   </bean>
 
+  <!-- FIXME DELETED all commented out files -->
  <!-- <bean id="TransBeforeSaveExtensionPoint" scope="singleton"
         class="org.pentaho.di.plugins.fileopensave.extension.TransBeforeSaveExtensionPoint">
     <argument ref="metaStoreLocator" />
@@ -90,6 +92,8 @@
     <pen:di-plugin type="org.pentaho.di.core.extension.ExtensionPointPluginType"/>
   </bean>
 -->
+
+  <!-- TODO evaluate if these files should be deleted -->
   <bean id="JobFinishExtensionPoint" scope="singleton"
         class="org.pentaho.di.plugins.fileopensave.extension.JobFinishExtensionPoint">
     <argument ref="fileCache"/>
