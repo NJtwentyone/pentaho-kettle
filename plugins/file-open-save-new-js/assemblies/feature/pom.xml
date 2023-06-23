@@ -35,4 +35,32 @@
     </dependency>
   </dependencies>
 
+  <!-- FIXME not sure why the generated target/feature/feature.xml does not deploy plyugin in pentaho karaf -->
+  <!-- Below works, modeled off pentaho-big-data-plugin-osgi-9.6.0.0-SNAPSHOT-features.xml feature="pentaho-hadoop-cluster-ui" -->
+  <!-- not sure why I have still have <bundle>mvn:org.pentaho.di.plugins/pentaho-metastore-locator-api/9.6.0.0-SNAPSHOT</bundle> -->
+  <!--  feature.xml:start
+  <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<features xmlns="http://karaf.apache.org/xmlns/features/v1.6.0" name="file-open-save-new-js-plugin-repo">
+
+    <feature name="file-open-save-new-js-plugin" version="9.6.0.0-SNAPSHOT">
+        <bundle>mvn:org.pentaho.di.plugins/core-ui/9.6.0.0-SNAPSHOT</bundle>
+
+        <bundle>mvn:org.pentaho.di.plugins/file-open-save-new-js-api/9.6.0.0-SNAPSHOT</bundle>
+        <bundle>mvn:org.pentaho.di.plugins/file-open-save-new-js-core/9.6.0.0-SNAPSHOT</bundle>
+     <bundle>mvn:org.pentaho.di.plugins/pentaho-metastore-locator-api/9.6.0.0-SNAPSHOT</bundle>
+        <bundle>pentaho-webjars:mvn:org.webjars.bower/angular/1.8.0</bundle>
+        <bundle>pentaho-webjars:mvn:org.webjars.bower/angular-animate/1.8.0</bundle>
+        <bundle>pentaho-webjars:mvn:org.webjars.bower/angular-i18n/1.8.0</bundle>
+        <bundle>pentaho-webjars:mvn:org.webjars.bower/requirejs-text/2.0.10</bundle>
+<bundle>pentaho-webjars:mvn:org.webjars.bower/dojo/1.9.2</bundle>
+        <bundle>pentaho-webjars:mvn:org.webjars.npm/uirouter__core/5.0.23</bundle>
+        <bundle>pentaho-webjars:mvn:org.webjars.npm/uirouter__angularjs/1.0.22</bundle>
+        <bundle>pentaho-webjars:mvn:org.webjars.npm/jquery/3.5.1</bundle>
+        <bundle>mvn:commons-fileupload/commons-fileupload/1.4</bundle>
+    </feature>
+
+
+</features>
+
+feature.xml:end -->
 </project>
