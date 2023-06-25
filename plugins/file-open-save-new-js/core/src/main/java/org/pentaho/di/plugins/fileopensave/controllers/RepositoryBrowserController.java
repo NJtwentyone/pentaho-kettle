@@ -62,7 +62,7 @@ public class RepositoryBrowserController {
   public static final String FILTER = "*.ktr|*.kjb";
 
   private RepositoryDirectoryInterface rootDirectory;
-  private Supplier<Spoon> spoonSupplier = Spoon::getInstance;
+//  private Supplier<Spoon> spoonSupplier = Spoon::getInstance; // FIXME remove Spoon/SWT reference
   private final RepositoryFileProvider repositoryFileProvider;
 
   public RepositoryBrowserController( RepositoryFileProvider repositoryFileProvider ) {
@@ -71,7 +71,7 @@ public class RepositoryBrowserController {
 
   public String getActiveFileName() {
     try {
-      return getSpoon().getActiveMeta().getName();
+      /*return getSpoon().getActiveMeta().getName();*/ return null; // FIXME remove Spoon/SWT
     } catch ( Exception e ) {
       return "";
     }
@@ -89,16 +89,17 @@ public class RepositoryBrowserController {
     }
   }
 
+  // FIME remove Spoon/SWT references
   public List<RepositoryFile> getRecentFiles() {
-    if ( spoonSupplier.get().rep == null ) {
+    if ( getSpoon().rep == null ) {
       return Collections.emptyList();
     }
 
     PropsUI props = PropsUI.getInstance();
 
     List<RepositoryFile> repositoryFiles = new ArrayList<>();
-    IUser userInfo = spoonSupplier.get().rep.getUserInfo();
-    String repoAndUser = spoonSupplier.get().rep.getName() + ":" + ( userInfo != null ? userInfo.getLogin() : "" );
+    IUser userInfo = getSpoon().rep.getUserInfo(); // FIXME remove Spoon/SWT reference
+    String repoAndUser = getSpoon().rep.getName() + ":" + ( userInfo != null ? userInfo.getLogin() : "" ); // FIXME remove Spoon/SWT reference
     List<LastUsedFile> lastUsedFiles =
       props.getLastUsedRepoFiles().getOrDefault( repoAndUser, Collections.emptyList() );
 
@@ -112,7 +113,7 @@ public class RepositoryBrowserController {
         continue;
       }
       if ( lastUsedFile.getRepositoryName() != null && lastUsedFile.getRepositoryName()
-        .equals( Spoon.getInstance().rep.getName() ) ) {
+        .equals( getSpoon().rep.getName() ) ) { // FIXME remove Spoon/SWT reference
         RepositoryFile repositoryFile = new RepositoryFile();
         final String index = String.valueOf( i );
         repositoryFile.setObjectId( index );
@@ -196,6 +197,7 @@ public class RepositoryBrowserController {
 
   public boolean saveFile( String path, String name, String fileName, boolean override ) {
     boolean result = checkForSecurityOrDupeIssues( path, name, fileName, override );
+    /* FIXME remove Spoon/SWT reference
     if ( result ) {
       try {
         RepositoryDirectoryInterface repositoryDirectoryInterface = findDirectory( path );
@@ -214,6 +216,7 @@ public class RepositoryBrowserController {
         return false;
       }
     }
+    */
     return result;
   }
 
@@ -231,6 +234,7 @@ public class RepositoryBrowserController {
    * @return - true if a duplicate file is found, false otherwise
    */
   private boolean hasDupeFile( String path, String name, String fileName, boolean override ) {
+    /* FIXME remove Spoon/SWT reference
     try {
       RepositoryDirectoryInterface repositoryDirectoryInterface = getRepository().findDirectory( path );
       EngineMetaInterface meta = getSpoon().getActiveMeta();
@@ -242,15 +246,21 @@ public class RepositoryBrowserController {
     } catch ( Exception e ) {
       System.out.println( e );
     }
+
+     */
     return false;
   }
 
   private boolean checkSecurity() {
+    /* FIXME remove Spoon/SWT reference
     EngineMetaInterface meta = getSpoon().getActiveMeta();
     return getSpoon().saveToRepositoryCheckSecurity( meta );
+     */
+    return false;
   }
 
   public boolean openRecentFile( String repo, String id ) {
+    /* FIXME remove Spoon/SWT reference
     // does the file exist?
     if ( getSpoon().recentRepoFileExists( repo, id ) ) {
       getSpoon().getDisplay().asyncExec( () -> {
@@ -260,6 +270,8 @@ public class RepositoryBrowserController {
     } else {
       return false;
     }
+    */
+     return false;
   }
 
   public List<org.pentaho.di.plugins.fileopensave.providers.repository.model.RepositoryObject> search( String path, String filter ) {
@@ -327,8 +339,9 @@ public class RepositoryBrowserController {
     return recentSearches;
   }
 
+  // FIXME remove Spoon/SWT references
   private Spoon getSpoon() {
-    return spoonSupplier.get();
+    /*return spoonSupplier.get();*/ return null;
   }
 
   private String getLogin() {
@@ -347,8 +360,9 @@ public class RepositoryBrowserController {
     return new RepositoryName( getRepository().getName() );
   }
 
+  // FIXME remove Spoon/SWT
   private Repository getRepository() {
-    return repository != null ? repository : spoonSupplier.get().rep;
+    return repository != null ? repository : getSpoon().rep;
   }
 
   private Boolean isAdmin() {

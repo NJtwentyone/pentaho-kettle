@@ -62,7 +62,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Supplier;
+//import java.util.function.Supplier; //FIXME remove SPoon/SWT references
 
 /**
  * Created by bmorrise on 2/14/19.
@@ -77,7 +77,7 @@ public class RepositoryFileProvider extends BaseFileProvider<RepositoryFile> {
   public static final String FILTER = "*.ktr|*.kjb";
 
   private RepositoryDirectoryInterface rootDirectory;
-  private Supplier<Spoon> spoonSupplier = Spoon::getInstance;
+//  private Supplier<Spoon> spoonSupplier = Spoon::getInstance;
 
   @Override public Class<RepositoryFile> getFileClass() {
     return RepositoryFile.class;
@@ -115,8 +115,8 @@ public class RepositoryFileProvider extends BaseFileProvider<RepositoryFile> {
     return repositoryDirectory.getChildren();
   }
 
-  @Override public boolean isAvailable() {
-    return spoonSupplier.get() != null && spoonSupplier.get().rep != null;
+  @Override public boolean isAvailable() { // FIXME remove Spoon/SWT code
+    /*return spoonSupplier.get() != null && spoonSupplier.get().rep != null;*/ return false;
   }
 
   // TODO: (Result) objects should be created at the endpoint and these should throw appropriate exceptions
@@ -583,8 +583,8 @@ public class RepositoryFileProvider extends BaseFileProvider<RepositoryFile> {
     }
   }
 
-  private Spoon getSpoon() {
-    return spoonSupplier.get();
+  private Spoon getSpoon() { // FIXME remove Spoon/SWT
+    /*return spoonSupplier.get();*/ return null;
   }
 
   private RepositoryDirectoryInterface findDirectory( String path ) {
@@ -629,8 +629,8 @@ public class RepositoryFileProvider extends BaseFileProvider<RepositoryFile> {
     fileDialogOperation.setFilename( fileDetails.getName() );
   }
 
-  private Repository getRepository() {
-    return RepositoryBrowserController.repository != null ? RepositoryBrowserController.repository
-      : spoonSupplier.get().getRepository();
+  private Repository getRepository() { // FIXME remove Spoon/SWT
+   /* return RepositoryBrowserController.repository != null ? RepositoryBrowserController.repository
+      : spoonSupplier.get().getRepository();*/ return null;
   }
 }
