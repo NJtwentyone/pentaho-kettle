@@ -55,11 +55,14 @@
 
   </jaxrs:server>
 
+  <!-- FIXME deleted do to compilation issue, not sure we need this anymore -->
+  <!--
   <bean id="FileOpenSaveExtensionPoint" scope="singleton"
         class="org.pentaho.di.plugins.fileopensave.extension.FileOpenSaveExtensionPoint">
     <argument ref="providerService"/>
     <pen:di-plugin type="org.pentaho.di.core.extension.ExtensionPointPluginType"/>
   </bean>
+  -->
 
   <!-- FIXME DELETED all commented out files -->
  <!-- <bean id="TransBeforeSaveExtensionPoint" scope="singleton"
