@@ -46,14 +46,4 @@ public class VFSHelper {
     }
     return null;
   }
-
-  /**
-   * FIXME hack to get 9.3 and 9.4 to compile
-   * @param file
-   * @param connection
-   * @return
-   */
-  public static FileSystemOptions getOpts( String file, String connection ) {
-    return  getOpts( file, connection, Variables.getADefaultVariableSpace()); // followed what was in FileController.java#space 
-  }
 }
