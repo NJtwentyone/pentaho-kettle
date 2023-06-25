@@ -25,6 +25,7 @@ package org.pentaho.di.plugins.fileopensave.providers.vfs;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemOptions;
 import org.apache.commons.vfs2.FileType;
 import org.apache.commons.vfs2.Selectors;
 import org.pentaho.di.connections.ConnectionDetails;
@@ -36,6 +37,7 @@ import org.pentaho.di.connections.vfs.VFSHelper;
 import org.pentaho.di.connections.vfs.VFSRoot;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleFileException;
+import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.variables.Variables;
 import org.pentaho.di.core.vfs.KettleVFS;
 import org.pentaho.di.plugins.fileopensave.api.providers.BaseFileProvider;
@@ -182,7 +184,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
     FileObject fileObject;
     try {
       fileObject = KettleVFS
-        .getFileObject( file.getPath(), new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection() ) );
+        .getFileObject( file.getPath(), new Variables(), getOpts( file.getPath(), file.getConnection() ) );
     } catch ( KettleFileException e ) {
       throw new FileNotFoundException( file.getPath(), TYPE );
     }
@@ -245,7 +247,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
   @Override public VFSFile getFile( VFSFile file ) {
     try {
       FileObject fileObject = KettleVFS
-        .getFileObject( file.getPath(), new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection() ) );
+        .getFileObject( file.getPath(), new Variables(), getOpts( file.getPath(), file.getConnection() ) );
       if ( !fileObject.exists() ) {
         return null;
       }
@@ -275,7 +277,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
     for ( VFSFile file : files ) {
       try {
         FileObject fileObject = KettleVFS
-          .getFileObject( file.getPath(), new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection() ) );
+          .getFileObject( file.getPath(), new Variables(), getOpts( file.getPath(), file.getConnection() ) );
         if ( fileObject.delete() ) {
           deletedFiles.add( file );
         }
@@ -294,7 +296,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
     try {
       FileObject fileObject = KettleVFS
         .getFileObject( folder.getPath(), new Variables(),
-          VFSHelper.getOpts( folder.getPath(), folder.getConnection() ) );
+          getOpts( folder.getPath(), folder.getConnection() ) );
       fileObject.createFolder();
       String parent = folder.getPath().substring( 0, folder.getPath().length() - 1 );
       return VFSDirectory.create( parent, fileObject, folder.getConnection(), folder.getDomain() );
@@ -334,9 +336,9 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
   private VFSFile doMove( VFSFile file, String newPath, boolean overwrite ) {
     try {
       FileObject fileObject = KettleVFS
-        .getFileObject( file.getPath(), new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection() ) );
+        .getFileObject( file.getPath(), new Variables(), getOpts( file.getPath(), file.getConnection() ) );
       FileObject renameObject = KettleVFS
-        .getFileObject( newPath, new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection() ) );
+        .getFileObject( newPath, new Variables(), getOpts( file.getPath(), file.getConnection() ) );
       if ( overwrite && renameObject.exists() ) {
         renameObject.delete();
       }
@@ -364,9 +366,9 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
   public VFSFile copy( VFSFile file, String toPath, boolean overwrite ) throws FileException {
     try {
       FileObject fileObject = KettleVFS
-        .getFileObject( file.getPath(), new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection() ) );
+        .getFileObject( file.getPath(), new Variables(), getOpts( file.getPath(), file.getConnection() ) );
       FileObject copyObject =
-        KettleVFS.getFileObject( toPath, new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection() ) );
+        KettleVFS.getFileObject( toPath, new Variables(), getOpts( file.getPath(), file.getConnection() ) );
       copyObject.copyFrom( fileObject, Selectors.SELECT_SELF );
       if ( file instanceof VFSDirectory ) {
         return VFSDirectory
@@ -390,7 +392,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
     path = sanitizeName( dir, path );
     try {
       FileObject fileObject =
-        KettleVFS.getFileObject( path, new Variables(), VFSHelper.getOpts( path, dir.getConnection() ) );
+        KettleVFS.getFileObject( path, new Variables(), getOpts( path, dir.getConnection() ) );
       return fileObject.exists();
     } catch ( KettleFileException | FileSystemException e ) {
       throw new FileException();
@@ -404,7 +406,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
   public InputStream readFile( VFSFile file ) {
     try {
       FileObject fileObject = KettleVFS
-        .getFileObject( file.getPath(), new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection() ) );
+        .getFileObject( file.getPath(), new Variables(), getOpts( file.getPath(), file.getConnection() ) );
       return fileObject.getContent().getInputStream();
     } catch ( KettleException | FileSystemException e ) {
       return null;
@@ -425,7 +427,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
     FileObject fileObject = null;
     try {
       fileObject = KettleVFS
-        .getFileObject( path, new Variables(), VFSHelper.getOpts( destDir.getPath(), destDir.getConnection() ) );
+        .getFileObject( path, new Variables(), getOpts( destDir.getPath(), destDir.getConnection() ) );
     } catch ( KettleException ke ) {
       throw new FileException();
     }
@@ -471,7 +473,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
     String testName = sanitizeName( destDir, newPath );
     try {
       while ( KettleVFS
-        .getFileObject( testName, new Variables(), VFSHelper.getOpts( testName, destDir.getConnection() ) )
+        .getFileObject( testName, new Variables(), getOpts( testName, destDir.getConnection() ) )
         .exists() ) {
         if ( Utils.isValidExtension( extension ) ) {
           testName = sanitizeName( destDir, parent + name + " " + i + "." + extension );
@@ -511,5 +513,25 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
 
   public void clearProviderCache() {
     this.roots = new HashMap<>();
+  }
+
+  /**
+   * Wrapper hack to get 9.3 and 9.4 code to compile
+   * with 9.6 {@link org.pentaho.di.connections.vfs.VFSHelper#getOpts(String, String, VariableSpace)}
+   * <p>
+   * FIXME update to current 9.6 VFSHelper#getOps and KettleVFS.getFileObject code
+   * @param file
+   * @param connection
+   * @return
+   */
+  public static FileSystemOptions getOpts( String file, String connection ) {
+    /**
+     TODO should create wrapper class in project that calls:
+       KettleVFS.getFileObject( path, new Variables(), getOpts( destDir.getPath(), destDir.getConnection() ) );
+     reasoning:
+      - external dependency to this project "file-open-save-new-js", single place to update method signature when it changes
+      - will make unit testing this class easier, less mocking setup and configuration
+     */
+    return  VFSHelper.getOpts( file, connection, Variables.getADefaultVariableSpace()); // followed what was in FileController.java#space
   }
 }
