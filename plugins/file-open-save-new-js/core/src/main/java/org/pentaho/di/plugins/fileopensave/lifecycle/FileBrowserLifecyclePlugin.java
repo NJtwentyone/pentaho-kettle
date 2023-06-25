@@ -41,7 +41,7 @@ public class FileBrowserLifecyclePlugin implements SpoonPluginInterface, SpoonLi
 
   public static final String VFS_CONNECTIONS = "VFS Connections";
   private final FileCache fileCache;
-  private Supplier<Spoon> spoonSupplier = Spoon::getInstance;
+//  private Supplier<Spoon> spoonSupplier = Spoon::getInstance; FIXME remove Spoon/SWT reference
 
   public FileBrowserLifecyclePlugin( FileCache fileCache ) {
     this.fileCache = fileCache;
@@ -55,10 +55,10 @@ public class FileBrowserLifecyclePlugin implements SpoonPluginInterface, SpoonLi
   @Override public void onEvent( SpoonLifeCycleEvent evt ) {
     if ( evt == SpoonLifeCycleEvent.REPOSITORY_CHANGED ) {
       fileCache.clearAll();
-      spoonSupplier.get().refreshTree( VFS_CONNECTIONS );
+//      spoonSupplier.get().refreshTree( VFS_CONNECTIONS ); FIXME remove Spoon/SWT reference
     }
     if ( evt == SpoonLifeCycleEvent.REPOSITORY_DISCONNECTED ) {
-      spoonSupplier.get().refreshTree( VFS_CONNECTIONS );
+//      spoonSupplier.get().refreshTree( VFS_CONNECTIONS ); FIXME remove Spoon/SWT reference
     }
   }
 
