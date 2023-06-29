@@ -168,7 +168,10 @@ define(
         }
 
         function open(file) {
-          select(JSON.stringify({
+          // TODO update GWT code to put select in iframe or create angular module that will search for window.select is defined
+          // TODO update all other places in file
+          let parent_window = window.parent;
+          parent_window.select(JSON.stringify({
             name: file.name,
             path: file.path,
             parent: file.parent,
