@@ -24,7 +24,7 @@
             "css": "../../require-css@${require-css.version}/css",
             "text": "../../requirejs-text@${requirejs-text.version}/text",
             "dojo": "../../dojo@${dojo.version}",
-            "pentaho/i18n-osgi": basePath + "/@pentaho/i18n-osgi@9.6.0.0-SNAPSHOT/js/i18n" // FIXME use require.config.baseUrl  [BACKLOG-37873]
+            "pentaho/i18n-osgi": "../.." + "/@pentaho/i18n-osgi@9.6.0.0-SNAPSHOT/js/i18n" // FIXME use require.config.baseUrl  [BACKLOG-37873] + hard coded to 9.6 that is destination dev pentaho server
           }
         });
       } else {
