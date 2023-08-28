@@ -143,10 +143,18 @@ public class ConnectionEndpoints {
   @GET
   @Path( "/help" )
   public Response help() {
-    spoonSupplier.get().getShell().getDisplay().asyncExec( () ->
-      HelpUtils.openHelpDialog( spoonSupplier.get().getDisplay().getActiveShell(),
-        BaseMessages.getString( PKG, "ConnectionDialog.help.dialog.Title" ),
-        HELP_URL, BaseMessages.getString( PKG, "ConnectionDialog.help.dialog.Header" ) ) );
+    /**
+     * FIXME removing dependency on Spoon.java/SWT - SCENARIO HELP
+     * TODO properly implement a javascript callback similar to:
+     *    https://github.com/pentaho/pentaho-kettle/blob/9.3.0.4/plugins/connections/ui/src/main/javascript/app/components/intro/intro.component.js#L176
+     * and then in the client ( Spoon or PUC) provide the js function such as:
+     *    https://github.com/pentaho/pentaho-kettle/blob/9.3.0.4/plugins/connections/ui/src/main/java/org/pentaho/di/connections/ui/dialog/ConnectionDialog.java#L84-L89
+     * and return just String or JSON of HELP_URL or value of "ConnectionDialog.help.dialog.Help" in this function
+     */
+//    spoonSupplier.get().getShell().getDisplay().asyncExec( () ->
+//      HelpUtils.openHelpDialog( spoonSupplier.get().getDisplay().getActiveShell(),
+//        BaseMessages.getString( PKG, "ConnectionDialog.help.dialog.Title" ),
+//        HELP_URL, BaseMessages.getString( PKG, "ConnectionDialog.help.dialog.Header" ) ) );
     return Response.ok().build();
   }
 
