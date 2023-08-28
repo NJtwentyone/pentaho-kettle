@@ -63,8 +63,12 @@ public class ConnectionEndpoints {
     Const.getDocUrl( BaseMessages.getString( PKG, "ConnectionDialog.help.dialog.Help" ) );
 
   public ConnectionEndpoints( MetastoreLocator metastoreLocator ) {
-    this.connectionManager = ConnectionManager.getInstance();
+    this( ConnectionManager.getInstance() );
     this.connectionManager.setMetastoreSupplier( MetaStoreConst.getDefaultMetastoreSupplier() );
+  }
+
+  public ConnectionEndpoints( ConnectionManager connectionManager ) {
+    this.connectionManager = connectionManager;
   }
 
   @GET
