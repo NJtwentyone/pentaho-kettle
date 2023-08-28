@@ -44,10 +44,12 @@ import org.eclipse.swt.widgets.Text;
 import org.pentaho.di.base.AbstractMeta;
 import org.pentaho.di.connections.ConnectionDetails;
 import org.pentaho.di.connections.ConnectionManager;
+import org.pentaho.di.connections.ui.dialog.ConnectionRenameDialog;
 import org.pentaho.di.connections.ui.tree.ConnectionFolderProvider;
 import org.pentaho.di.connections.vfs.VFSDetailsComposite;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.EngineMetaInterface;
+import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.vfs.connections.ui.dialog.VFSDetailsCompositeHelper;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.ui.core.PropsUI;
@@ -55,6 +57,7 @@ import org.pentaho.di.ui.core.gui.GUIResource;
 import org.pentaho.di.ui.core.gui.WindowProperty;
 import org.pentaho.di.ui.spoon.Spoon;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
+import org.pentaho.di.ui.util.HelpUtils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -96,6 +99,7 @@ public class ConnectionDialog extends Dialog {
 
   private Composite wDetailsWrapperComp;
   private ScrolledComposite wScrolledComposite;
+  private String originalName;
 
   public ConnectionDialog( Shell shell, int width, int height ) {
     super( shell, SWT.NONE );
@@ -104,7 +108,9 @@ public class ConnectionDialog extends Dialog {
     props = PropsUI.getInstance();
     connectionTypes = connectionManager.getItems();
     connectionTypeChoices =
-      connectionTypes.stream().map( ConnectionManager.Type::getLabel ).sorted().toArray( String[]::new );
+      connectionTypes.stream().filter( connType -> !"other".equals( new String( connType.getValue() ) ) )
+        .map( ConnectionManager.Type::getLabel ).sorted().toArray( String[]::new );
+
     helper = new VFSDetailsCompositeHelper( PKG, props );
   }
 
@@ -130,7 +136,6 @@ public class ConnectionDialog extends Dialog {
     shell.setLayout( formLayout );
 
     // First, add the buttons...
-    // Buttons
     Button wOK = new Button( shell, SWT.PUSH );
     wOK.setText( BaseMessages.getString( PKG, "System.Button.OK" ) );
 
@@ -142,6 +147,23 @@ public class ConnectionDialog extends Dialog {
 
     Button[] buttons = new Button[] { wOK, wCancel, wTest };
     BaseStepDialog.positionBottomRightButtons( shell, buttons, MARGIN, null );
+
+    String docUrl =
+      Const.getDocUrl( BaseMessages.getString( PKG, "ConnectionDialog.help.dialog.Help" ) );
+    String docTitle = BaseMessages.getString( PKG, "ConnectionDialog.help.dialog.Title" );
+    String docHeader = BaseMessages.getString( PKG, "ConnectionDialog.help.dialog.Header" );
+    Button btnHelp = new Button( shell, SWT.NONE );
+    btnHelp.setImage( GUIResource.getInstance().getImageHelpWeb() );
+    btnHelp.setText( BaseMessages.getString( PKG, "System.Button.Help" ) );
+    btnHelp.setToolTipText( BaseMessages.getString( PKG, "System.Tooltip.Help" ) );
+    BaseStepDialog.positionBottomLeftButtons( shell, new Button[] { btnHelp }, MARGIN, null );
+    btnHelp.addSelectionListener( new SelectionAdapter() {
+      @Override
+      public void widgetSelected( SelectionEvent evt ) {
+        HelpUtils.openHelpDialog( parent.getShell(), docTitle,
+          docUrl, docHeader );
+      }
+    } );
 
     // Add listeners
     wOK.addListener( SWT.Selection, e -> ok() );
@@ -217,6 +239,7 @@ public class ConnectionDialog extends Dialog {
   private void setConnectionType() { // When first loaded
     if ( connectionName != null ) {
       connectionDetails = connectionManager.getConnectionDetails( connectionName );
+      originalName = connectionName;
       if ( connectionDetails != null ) {
         connectionTypeKey = connectionDetails.getType();
       }
@@ -224,6 +247,7 @@ public class ConnectionDialog extends Dialog {
     }
     connectionTypeKey = convertTypeLabelToKey( connectionTypeChoices[ 0 ] );
     connectionDetails = connectionManager.createConnectionDetails( connectionTypeKey );
+    originalName = null;
   }
 
   private void updateConnectionType( String connectionType ) {
@@ -266,13 +290,13 @@ public class ConnectionDialog extends Dialog {
       vfsDetailsComposite = (VFSDetailsComposite) connectionDetails.openDialog( wDetailsWrapperComp, props );
     }
 
-    wConnectionTypeComp.layout();
-
-    wDetailsWrapperComp.pack();
-    wScrolledComposite.setMinSize( wDetailsWrapperComp.computeSize( SWT.DEFAULT, SWT.DEFAULT ) );
-    wScrolledComposite.setContent( wDetailsWrapperComp );
-    wScrolledComposite.setExpandHorizontal( true );
+    wScrolledComposite.setExpandHorizontal( false );
     wScrolledComposite.setExpandVertical( true );
+    wScrolledComposite.setContent( wDetailsWrapperComp );
+    wDetailsWrapperComp.pack();
+    wScrolledComposite.setMinSize(
+      wDetailsWrapperComp.computeSize( wConnectionTypeComp.getClientArea().width, SWT.DEFAULT ) );
+    wConnectionTypeComp.layout();
   }
 
   private void transferFieldsFromOldToNew( ConnectionDetails connectionDetails,
@@ -327,7 +351,20 @@ public class ConnectionDialog extends Dialog {
   }
 
   private void ok() {
-    if ( validateEntries() && connectionManager.save( connectionDetails ) ) {
+    if ( validateEntries() ) {
+      if ( originalName != null && !originalName.equals( connectionDetails.getName() ) ) {
+        ConnectionRenameDialog connectionDeleteDialog = new ConnectionRenameDialog( spoonSupplier.get().getShell() );
+        int answer = connectionDeleteDialog.open( originalName, connectionDetails.getName() );
+        if ( answer == SWT.CANCEL ) {
+          return;
+        }
+        connectionManager.save( connectionDetails );
+        if ( answer == SWT.NO ) {
+          connectionManager.delete( originalName );
+        }
+      } else {
+        connectionManager.save( connectionDetails );
+      }
       refreshMenu();
       dispose();
     }
@@ -360,19 +397,31 @@ public class ConnectionDialog extends Dialog {
     if ( isEmpty( connectionDetails.getName() ) ) {
       return BaseMessages.getString( PKG, "ConnectionDialog.validate.failure.noName" );
     }
+    ConnectionDetails attemptReadDetails = connectionManager.getConnectionDetails( connectionDetails.getName() );
+    if ( attemptReadDetails != null && attemptReadDetails.getType() != connectionDetails.getType() ) {
+      return BaseMessages.getString( PKG, "ConnectionDialog.validate.failure.sameNameOnDifferentType",
+        connectionDetails.getName(), convertKeyToTypeLabel( attemptReadDetails.getType() ) );
+    }
     return vfsDetailsComposite.validate();
   }
 
   private void test() {
     if ( validateEntries() ) {
-      boolean result = connectionManager.test( connectionDetails );
+      boolean result = false;
       MessageBox mb;
-      if ( !result ) {
+      try {
+        result = connectionManager.test( connectionDetails );
+        if ( !result ) {
+          mb = new MessageBox( shell, SWT.OK | SWT.ICON_ERROR );
+          mb.setMessage( BaseMessages.getString( PKG, "ConnectionDialog.test.failure" ) );
+        } else {
+          mb = new MessageBox( shell, SWT.OK | SWT.ICON_INFORMATION );
+          mb.setMessage( BaseMessages.getString( PKG, "ConnectionDialog.test.success" ) );
+        }
+      } catch ( KettleException e ) {
         mb = new MessageBox( shell, SWT.OK | SWT.ICON_ERROR );
-        mb.setMessage( BaseMessages.getString( PKG, "ConnectionDialog.test.failure" ) );
-      } else {
-        mb = new MessageBox( shell, SWT.OK | SWT.ICON_INFORMATION );
-        mb.setMessage( BaseMessages.getString( PKG, "ConnectionDialog.test.success" ) );
+        mb.setMessage(
+          BaseMessages.getString( PKG, "ConnectionDialog.test.failure" ) + Const.CR + Const.CR + e.getMessage() );
       }
       mb.open();
     }

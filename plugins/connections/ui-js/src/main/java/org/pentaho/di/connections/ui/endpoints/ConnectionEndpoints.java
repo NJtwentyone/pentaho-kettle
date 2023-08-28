@@ -25,15 +25,17 @@ package org.pentaho.di.connections.ui.endpoints;
 import org.pentaho.di.base.AbstractMeta;
 import org.pentaho.di.connections.ConnectionDetails;
 import org.pentaho.di.connections.ConnectionManager;
+import org.pentaho.di.metastore.MetaStoreConst;
+import org.pentaho.metastore.locator.api.MetastoreLocator;
 import org.pentaho.di.connections.ui.dialog.ConnectionDialog;
 import org.pentaho.di.connections.ui.tree.ConnectionFolderProvider;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.EngineMetaInterface;
+import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.variables.Variables;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.ui.spoon.Spoon;
-import org.pentaho.osgi.metastore.locator.api.MetastoreLocator;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -62,7 +64,7 @@ public class ConnectionEndpoints {
 
   public ConnectionEndpoints( MetastoreLocator metastoreLocator ) {
     this.connectionManager = ConnectionManager.getInstance();
-    this.connectionManager.setMetastoreSupplier( metastoreLocator::getMetastore );
+    this.connectionManager.setMetastoreSupplier( MetaStoreConst.getDefaultMetastoreSupplier() );
   }
 
   @GET
@@ -120,7 +122,13 @@ public class ConnectionEndpoints {
   public Response testConnection( ConnectionDetails connectionDetails ) {
     VariableSpace space = Variables.getADefaultVariableSpace();
     connectionDetails.setSpace( space );
-    boolean valid = connectionManager.test( connectionDetails );
+    boolean valid = false;
+    try {
+      valid = connectionManager.test( connectionDetails );
+    } catch ( KettleException e ) {
+      // NOTE: do nothing
+    }
+
     if ( valid ) {
       return Response.ok().build();
     } else {

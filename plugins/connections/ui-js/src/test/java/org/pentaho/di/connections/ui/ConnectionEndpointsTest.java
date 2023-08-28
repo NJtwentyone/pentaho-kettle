@@ -28,8 +28,8 @@ import org.pentaho.di.connections.ConnectionManager;
 import org.pentaho.di.connections.ui.endpoints.ConnectionEndpoints;
 import org.pentaho.di.core.KettleClientEnvironment;
 import org.pentaho.metastore.api.IMetaStore;
+import org.pentaho.metastore.locator.api.MetastoreLocator;
 import org.pentaho.metastore.stores.memory.MemoryMetaStore;
-import org.pentaho.osgi.metastore.locator.api.MetastoreLocator;
 
 import static org.junit.Assert.assertEquals;
 
@@ -37,8 +37,8 @@ import javax.ws.rs.core.Response;
 
 public class ConnectionEndpointsTest {
 
-  private ConnectionManager connectionManager = ConnectionManager.getInstance();
-  private MemoryMetaStore memoryMetaStore = new MemoryMetaStore();
+  private ConnectionManager connectionManager = ConnectionManager.getInstance(); // TODO mock out class ConnectionManager.java, should not testing production instantiation of external class here in unit test, better suited for integration/fuctional test
+  private MemoryMetaStore memoryMetaStore = new MemoryMetaStore(); // FIXME remove dependency on https://github.com/pentaho/metastore class
   private static String DESCRIPTION = "Connection Description";
   private static String CONNECTION_NAME = "Connection Name";
   private static String PASSWORD = "testpassword";

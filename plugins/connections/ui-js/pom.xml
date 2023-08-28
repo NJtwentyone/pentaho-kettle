@@ -38,9 +38,9 @@
       <artifactId>core-ui</artifactId>
     </dependency>
     <dependency>
-      <groupId>pentaho</groupId>
+      <groupId>org.pentaho.di.plugins</groupId> <!-- TODO remvoe comment, update to groupId naming, change version to match convention -->
       <artifactId>pentaho-metastore-locator-api</artifactId>
-      <version>${pdi.version}</version>
+      <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
