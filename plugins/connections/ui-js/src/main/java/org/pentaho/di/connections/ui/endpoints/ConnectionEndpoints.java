@@ -22,21 +22,16 @@
 
 package org.pentaho.di.connections.ui.endpoints;
 
-import org.pentaho.di.base.AbstractMeta;
 import org.pentaho.di.connections.ConnectionDetails;
 import org.pentaho.di.connections.ConnectionManager;
 import org.pentaho.di.metastore.MetaStoreConst;
 import org.pentaho.metastore.locator.api.MetastoreLocator;
 import org.pentaho.di.connections.ui.dialog.ConnectionDialog;
-import org.pentaho.di.connections.ui.tree.ConnectionFolderProvider;
 import org.pentaho.di.core.Const;
-import org.pentaho.di.core.EngineMetaInterface;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.variables.Variables;
 import org.pentaho.di.i18n.BaseMessages;
-import org.pentaho.di.ui.spoon.Spoon;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -46,16 +41,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
-import java.util.function.Supplier;
-
-import org.pentaho.di.ui.util.HelpUtils;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 public class ConnectionEndpoints {
 
   private static Class<?> PKG = ConnectionDialog.class;
-  private Supplier<Spoon> spoonSupplier = Spoon::getInstance;
+//  private Supplier<Spoon> spoonSupplier = Spoon::getInstance;
 
   private ConnectionManager connectionManager;
 
@@ -108,12 +100,20 @@ public class ConnectionEndpoints {
       if ( !connectionDetails.getName().equals( name ) ) {
         connectionManager.delete( name );
       }
-      getSpoon().getShell().getDisplay().asyncExec( () -> getSpoon().refreshTree(
-        ConnectionFolderProvider.STRING_VFS_CONNECTIONS ) );
-      EngineMetaInterface engineMetaInterface = getSpoon().getActiveMeta();
-      if ( engineMetaInterface instanceof AbstractMeta ) {
-        ( (AbstractMeta) engineMetaInterface ).setChanged();
-      }
+      /**
+       * FIXME removing dependency on Spoon.java/SWT - SCENARIO NEWCONNECTION
+       * TODO properly implement a javascript callback similar to:
+       *    https://github.com/pentaho/pentaho-kettle/blob/9.3.0.4/plugins/connections/ui/src/main/javascript/app/components/intro/intro.component.js#L176
+       * and then in the client ( Spoon or PUC) provide the js function such as:
+       *    https://github.com/pentaho/pentaho-kettle/blob/9.3.0.4/plugins/connections/ui/src/main/java/org/pentaho/di/connections/ui/dialog/ConnectionDialog.java#L84-L89
+       * and return name of newly created connection or no name and just success
+       */
+//      getSpoon().getShell().getDisplay().asyncExec( () -> getSpoon().refreshTree(
+//        ConnectionFolderProvider.STRING_VFS_CONNECTIONS ) );
+//      EngineMetaInterface engineMetaInterface = getSpoon().getActiveMeta();
+//      if ( engineMetaInterface instanceof AbstractMeta ) {
+//        ( (AbstractMeta) engineMetaInterface ).setChanged();
+//      }
       return Response.ok().build();
     } else {
       return Response.serverError().build();
@@ -158,7 +158,7 @@ public class ConnectionEndpoints {
     return Response.ok().build();
   }
 
-  private Spoon getSpoon() {
-    return spoonSupplier.get();
-  }
+//  private Spoon getSpoon() {
+//    return spoonSupplier.get();
+//  }
 }
