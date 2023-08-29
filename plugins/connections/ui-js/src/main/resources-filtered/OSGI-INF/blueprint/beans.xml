@@ -29,11 +29,16 @@
            xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd"
            xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
            default-timeout="20000" default-activation="eager">
-  
+
   <jaxrs:server address="/connection" id="browser-endpoint">
     <jaxrs:serviceBeans>
       <bean class="org.pentaho.di.connections.ui.endpoints.ConnectionEndpoints">
-        <argument ref="metastoreLocator"/>
+      <!-- TODO add spring injection for ConnectionManager.java to replace code for ConnectionEndpoints() and use ConnectionEndpoints(connectionManager)
+        public ConnectionEndpoints() {
+          this( ConnectionManager.getInstance() );
+          this.connectionManager.setMetastoreSupplier( MetaStoreConst.getDefaultMetastoreSupplier() );
+         }
+      -->
       </bean>
     </jaxrs:serviceBeans>
 
