@@ -17,6 +17,7 @@
     <bundle>pentaho-webjars:mvn:org.webjars.bower/angular-animate/${angular.version}</bundle>
     <bundle>pentaho-webjars:mvn:org.webjars.bower/require-css/${require-css.version}</bundle>
     <bundle>pentaho-webjars:mvn:org.webjars.bower/requirejs-text/${requirejs-text.version}</bundle>
+    <bundle>pentaho-webjars:mvn:org.webjars.bower/dojo/${dojo.version}</bundle>
     <!-- END -->
   </feature>
 
