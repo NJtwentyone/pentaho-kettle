@@ -25,8 +25,6 @@ package org.pentaho.di.connections.ui.endpoints;
 import org.pentaho.di.connections.ConnectionDetails;
 import org.pentaho.di.connections.ConnectionManager;
 import org.pentaho.di.metastore.MetaStoreConst;
-import org.pentaho.metastore.locator.api.MetastoreLocator;
-import org.pentaho.di.connections.ui.dialog.ConnectionDialog;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.variables.VariableSpace;
@@ -46,15 +44,14 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
 public class ConnectionEndpoints {
 
-  private static Class<?> PKG = ConnectionDialog.class;
-//  private Supplier<Spoon> spoonSupplier = Spoon::getInstance;
+  private static Class<?> PKG = ConnectionEndpoints.class;
 
   private ConnectionManager connectionManager;
 
   public static final String HELP_URL =
     Const.getDocUrl( BaseMessages.getString( PKG, "ConnectionDialog.help.dialog.Help" ) );
 
-  public ConnectionEndpoints( MetastoreLocator metastoreLocator ) {
+  public ConnectionEndpoints() { // TODO wiring in spring beans.xml to only have one constructor ConnectionEndpoints( ConnectionManager connectionManager )
     this( ConnectionManager.getInstance() );
     this.connectionManager.setMetastoreSupplier( MetaStoreConst.getDefaultMetastoreSupplier() );
   }
@@ -158,7 +155,4 @@ public class ConnectionEndpoints {
     return Response.ok().build();
   }
 
-//  private Spoon getSpoon() {
-//    return spoonSupplier.get();
-//  }
 }
