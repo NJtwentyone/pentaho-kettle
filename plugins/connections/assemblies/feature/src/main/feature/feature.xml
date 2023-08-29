@@ -1,11 +1,10 @@
 <features name="${project.artifactId}-repo" xmlns="http://karaf.apache.org/xmlns/features/v1.2.1">
 
   <feature name="${project.artifactId}" version="${project.version}">
-
+    <details>${project.name}</details>
     <feature>cxf-jaxrs</feature>
     <feature>pentaho-requirejs-osgi-manager</feature>
     <feature>pentaho-deployers</feature>
-    <details>${project.description}</details>
     <feature>pentaho-i18n</feature>
     <bundle>mvn:pentaho/pentaho-i18n-webservice-bundle/${pentaho-osgi-bundles.version}</bundle>
 
