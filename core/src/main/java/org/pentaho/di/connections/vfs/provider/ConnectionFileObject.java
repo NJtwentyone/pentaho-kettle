@@ -33,6 +33,8 @@ import org.apache.commons.vfs2.provider.AbstractFileName;
 import org.apache.commons.vfs2.provider.AbstractFileObject;
 import org.apache.commons.vfs2.provider.URLFileName;
 import org.apache.commons.vfs2.util.RandomAccessMode;
+import org.pentaho.di.connections.vfs.tranform.PocLegacyGetChildVFSUriTransformer;
+import org.pentaho.di.connections.vfs.tranform.PocVFSUriTransformer;
 import org.pentaho.di.core.vfs.AliasedFileObject;
 import org.pentaho.di.core.vfs.KettleVFS;
 
@@ -49,17 +51,37 @@ import java.io.OutputStream;
  */
 public class ConnectionFileObject extends AbstractFileObject<ConnectionFileSystem> implements AliasedFileObject {
 
-  public static final String DELIMITER = "/";
+  public static final String DELIMITER = "/"; // FIXME should be no longer needed
   private final AbstractFileObject<ConnectionFileSystem> resolvedFileObject;
   private final String domain;
+  private final PocVFSUriTransformer vfsUriTransformer;
 
+  /**
+   * @deprecated POC should not use going forward instead use
+   * {@link #ConnectionFileObject(AbstractFileName, ConnectionFileSystem, AbstractFileObject, String, PocVFSUriTransformer)}
+   * @param name
+   * @param fs
+   * @param resolvedFileObject
+   * @param domain
+   */
   public ConnectionFileObject( AbstractFileName name, ConnectionFileSystem fs,
                                AbstractFileObject<ConnectionFileSystem> resolvedFileObject,
                                String domain ) {
     super( name, fs );
     this.resolvedFileObject = resolvedFileObject;
     this.domain = domain;
+    this.vfsUriTransformer = new PocLegacyGetChildVFSUriTransformer( this, domain ); // handle backwards compatibility
   }
+
+  public ConnectionFileObject( AbstractFileName name, ConnectionFileSystem fs,
+                               AbstractFileObject<ConnectionFileSystem> resolvedFileObject,
+                               String domain, PocVFSUriTransformer vfsUriTransformer ) {
+    super( name, fs );
+    this.resolvedFileObject = resolvedFileObject;
+    this.domain = domain;
+    this.vfsUriTransformer = vfsUriTransformer;
+  }
+
 
   @Override protected long doGetContentSize() throws Exception {
     return 0;
@@ -143,28 +165,8 @@ public class ConnectionFileObject extends AbstractFileObject<ConnectionFileSyste
    * @throws FileSystemException File doesn't exist
    */
   private FileObject getChild( FileObject fileObject ) throws FileSystemException {
-    String connectionName = ( (ConnectionFileName) this.getName() ).getConnection();
-    StringBuilder connectionPath = new StringBuilder();
-    connectionPath.append( ConnectionFileProvider.SCHEME );
-    if ( fileObject.getName().toString().toLowerCase().startsWith( KettleVFS.SMB_SCHEME_COLON ) ) {
-      connectionPath.append( ":/" );
-    } else {
-      connectionPath.append( "://" );
-      connectionPath.append( connectionName );
-      connectionPath.append( DELIMITER );
-    }
-    if ( domain == null || domain.equals( "" ) ) {
-      // S3 does not return a URLFleName; but Google does hence the difference here
-      if ( fileObject.getName() instanceof URLFileName ) {
-        URLFileName urlFileName = (URLFileName) fileObject.getName();
-        connectionPath.append( urlFileName.getHostName() );
-      } else {
-        connectionPath.append( fileObject.getURL().getHost() );
-      }
-    }
-    connectionPath.append( fileObject.getName().getPath() );
-
-    return this.resolveFile( connectionPath.toString() );
+    String connectionPath = vfsUriTransformer.toVfsUri( fileObject );
+    return this.resolveFile( connectionPath );
   }
 
   @Override public FileContent getContent() throws FileSystemException {
