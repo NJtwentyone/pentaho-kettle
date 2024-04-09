@@ -33,7 +33,10 @@ import org.apache.commons.vfs2.provider.AbstractFileObject;
 import org.apache.commons.vfs2.provider.AbstractFileSystem;
 import org.pentaho.di.connections.ConnectionDetails;
 import org.pentaho.di.connections.ConnectionManager;
+import org.pentaho.di.connections.vfs.BaseVFSConnectionDetails;
 import org.pentaho.di.connections.vfs.VFSConnectionDetails;
+import org.pentaho.di.connections.vfs.tranform.PocDefaultVFSUriTransformer;
+import org.pentaho.di.connections.vfs.tranform.PocVFSUriTransformer;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.variables.Variables;
 import org.pentaho.di.core.vfs.KettleVFS;
@@ -60,23 +63,9 @@ public class ConnectionFileSystem extends AbstractFileSystem implements FileSyst
    * @param connectionDetails Connection details for the file name
    * @return created url otherwise null
    */
-  public static String getUrl( AbstractFileName abstractFileName, ConnectionDetails connectionDetails ) {
-    VFSConnectionDetails vfsConnectionDetails = (VFSConnectionDetails) connectionDetails;
-    String url = null;
-
-    if ( vfsConnectionDetails != null ) {
-      String domain = vfsConnectionDetails.getDomain();
-      if ( !domain.equals( "" ) ) {
-        domain = "/" + domain;
-      }
-      url = vfsConnectionDetails.getType() + ":/" + domain + abstractFileName.getPath();
-      //TODO Looks like a bug. For now excluding this for connections with hasBuckets. For future, needs to be re-analyzed.
-      if ( url.matches( DOMAIN_ROOT ) && vfsConnectionDetails.hasBuckets() ) {
-        url += vfsConnectionDetails.getName();
-      }
-    }
-
-    return url;
+  public static String getUrl( AbstractFileName abstractFileName, ConnectionDetails connectionDetails ) { // FIXME investigate why is this public and static !!?!?
+    VFSConnectionDetails vfsConnectionDetails = (VFSConnectionDetails) connectionDetails; // FIXME investigate aren't we almost guaranteed to be of class VFSConnectionDetails
+    return getVFSUriTransformer( vfsConnectionDetails ).toProviderUri( abstractFileName ); // handle all providers and basic url conversion scenario
   }
 
   @Override
@@ -103,7 +92,39 @@ public class ConnectionFileSystem extends AbstractFileSystem implements FileSyst
       fileObject = (AbstractFileObject) KettleVFS.getFileObject( url, varSpace );
     }
 
-    return new ConnectionFileObject( abstractFileName, this, fileObject, domain );
+    return createConnectionFile( connectionDetails, abstractFileName, this, fileObject, domain );
+  }
+
+  /**
+   * POC to support legacy VFSConnectionDetails
+   * hack "abstract factory" creational design pattern
+   * @param vfsConnectionDetails
+   * @param abstractFileName
+   * @param connectionFileSystem
+   * @param fileObject
+   * @param domain
+   * @return
+   */
+  protected ConnectionFileObject createConnectionFile( VFSConnectionDetails vfsConnectionDetails,
+        AbstractFileName abstractFileName, ConnectionFileSystem connectionFileSystem, AbstractFileObject fileObject,
+          String domain ) {
+    return (vfsConnectionDetails instanceof BaseVFSConnectionDetails )
+        ? new ConnectionFileObject( abstractFileName, connectionFileSystem, fileObject, domain, ( (BaseVFSConnectionDetails) vfsConnectionDetails ) )
+        : new ConnectionFileObject( abstractFileName, connectionFileSystem, fileObject, domain ); // NOTE: handles backwards compatibility
+  }
+
+  /**
+   * POC to support legacy VFSConnectionDetails
+   * simple "factory" creational design pattern
+   * can be more complicated based on PVFS  & VFSConnectionDetails requirements
+   * TODO investigate 'static' method signature forced by {@link #getUrl(AbstractFileName, ConnectionDetails)}
+   * @param vfsConnectionDetails
+   * @return
+   */
+  protected static PocVFSUriTransformer getVFSUriTransformer(VFSConnectionDetails vfsConnectionDetails ) {
+    return (vfsConnectionDetails instanceof BaseVFSConnectionDetails )
+        ? ( (BaseVFSConnectionDetails) vfsConnectionDetails )
+        : new PocDefaultVFSUriTransformer( vfsConnectionDetails ); // NOTE: handle backwards compatibility
   }
 
   @Override protected void addCapabilities( Collection<Capability> collection ) {
