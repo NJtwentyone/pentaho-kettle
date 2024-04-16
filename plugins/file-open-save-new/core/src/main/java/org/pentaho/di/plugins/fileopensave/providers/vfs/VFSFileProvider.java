@@ -36,8 +36,10 @@ import org.pentaho.di.connections.vfs.VFSConnectionProvider;
 import org.pentaho.di.connections.vfs.VFSHelper;
 import org.pentaho.di.connections.vfs.VFSRoot;
 import org.pentaho.di.connections.vfs.provider.ConnectionFileProvider;
+import org.pentaho.di.connections.vfs.provider.ConnectionFileSystem;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.exception.KettleFileException;
+import org.pentaho.di.core.util.StringUtil;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.variables.Variables;
 import org.pentaho.di.core.vfs.KettleVFS;
@@ -68,7 +70,24 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
 
   public static final String NAME = "VFS Connections";
   public static final String TYPE = "vfs";
-  public static final String DOMAIN_ROOT = "[\\w]+://";
+
+  /**
+   * Regular expression for connection name
+   * // TODO this should be defined somewhere else like in package {@link VFSConnectionDetails}
+   */
+  protected static final String CONNECTION_NAME_REGEX = "[\\w_-]+";
+
+  /**
+   * Regular expression for optional folder slash at the end of a path
+   */
+  protected static final String OPTIONAL_FOLDER_SLASH_REGEX = "[/]?";
+
+  /**
+   * Regular expression for the expected pvfs path that only contains the connection name
+   * ie "pvfs://someConnectionName".
+   */
+  protected static final String CONNECTION_NAME_ROOT_REGEX = ConnectionFileSystem.DOMAIN_ROOT
+      + CONNECTION_NAME_REGEX + OPTIONAL_FOLDER_SLASH_REGEX;
 
   private Supplier<ConnectionManager> connectionManagerSupplier = ConnectionManager::getInstance;
   private Map<String, List<VFSFile>> roots = new HashMap<>();
@@ -120,17 +139,12 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
         vfsLocation.setRoot( NAME );
         vfsLocation.setHasChildren( true );
         vfsLocation.setCanDelete( false );
-        String path = vfsConnectionDetails.getType() + "://";
-        if ( KettleVFS.SMB_SCHEME.equals( vfsConnectionDetails.getType() ) ) {
-          path += vfsConnectionDetails.getName();
-        } else {
-          path += vfsConnectionDetails.getDomain();
-        }
+        String path = ConnectionFileProvider.SCHEME + "://" +  vfsConnectionDetails.getName(); // just set to pvfs://<connectionName>
         vfsLocation.setPath( path );
         vfsLocation.setDomain( vfsConnectionDetails.getDomain() );
-        vfsLocation.setConnection( connectionDetails.getName() );
+        vfsLocation.setConnection( connectionDetails.getName() ); // TODO dont set once refactor calls to KettleVFS#getFileObject, VFSFile#create, and VFSDirectory#create
         vfsLocation.setCanAddChildren( vfsConnectionDetails.hasBuckets() );
-        if ( connectionDetails.getType().startsWith( "s3" ) || connectionDetails.getType().startsWith( "snw" ) ) {
+        if ( connectionDetails.getType().startsWith( "s3" ) || connectionDetails.getType().startsWith( "snw" ) ) { // TODO re-evaluate use VFSConnectionDetail#hasBuckets
           vfsLocation.setHasBuckets( true );
         }
         if ( connectionTypes.isEmpty() || connectionTypes.contains( connectionDetails.getType() ) ) {
@@ -143,34 +157,49 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
   }
 
   /**
-   * @param file
+   * Retrieves the "bucket" folders for a connection. These folders are populated from a call
+   * to {@link VFSConnectionProvider#getLocations(VFSConnectionDetails)}.
+   * <p/>
+   *
+   * For "bucket" folders the complete list of functions for {@link FileObject} can't be called.
+   * //TODO finish find out where/why Apache FileObjects fail on bucket locations.
+   * <ul>
+   *   <li>{@link FileObject#createFile()}</li>
+   * </ul>
+   *
+   * @param fileDomainRoot
    * @return
    */
-  private List<VFSFile> getRoot( VFSFile file ) throws FileException {
-    if ( this.roots.containsKey( file.getConnection() ) ) {
-      return this.roots.get( file.getConnection() );
+  private List<VFSFile> getRoot( VFSFile fileDomainRoot ) throws FileException {
+    if ( this.roots.containsKey( getKey( fileDomainRoot ) ) ) {
+      return this.roots.get( getKey( fileDomainRoot ) );
     }
-    List<VFSFile> files = new ArrayList<>();
 
-    VFSConnectionDetails vfsConnectionDetails =
-      (VFSConnectionDetails) ConnectionManager.getInstance().getConnectionDetails( file.getConnection() );
-    if( !vfsConnectionDetails.hasBuckets() ) {
+    ConnectionDetails connectionDetails = ConnectionManager.getInstance()
+        .getConnectionDetails( fileDomainRoot.getConnection() );
+
+    if ( !hasBuckets( connectionDetails ) ) {
       return null;
     }
+
+    VFSConnectionDetails vfsConnectionDetails = (VFSConnectionDetails) connectionDetails;
+
     @SuppressWarnings( "unchecked" )
     VFSConnectionProvider<VFSConnectionDetails> vfsConnectionProvider =
       (VFSConnectionProvider<VFSConnectionDetails>) ConnectionManager.getInstance()
         .getConnectionProvider( vfsConnectionDetails.getType() );
 
-    List<VFSRoot> vfsRoots = new ArrayList<>();
+    List<VFSRoot> vfsRoots;
     try {
       vfsRoots = vfsConnectionProvider.getLocations( vfsConnectionDetails );
     } catch ( Exception e ) {
       throw new FileException( "Error getting VFS locations. Check your credentials and for connectivity." + e.getMessage(), e );
     }
-    if ( vfsRoots.isEmpty() ) {
-      throw new FileNotFoundException( file.getPath(), file.getProvider() );
+    if ( vfsRoots == null || vfsRoots.isEmpty() ) {
+      throw new FileNotFoundException( fileDomainRoot.getPath(), fileDomainRoot.getProvider() );
     }
+
+    List<VFSFile> files = new ArrayList<>();
 
     String scheme = vfsConnectionProvider.getProtocol( vfsConnectionDetails );
     for ( VFSRoot root : vfsRoots ) {
@@ -179,15 +208,33 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
       vfsDirectory.setDate( root.getModifiedDate() );
       vfsDirectory.setHasChildren( true );
       vfsDirectory.setCanAddChildren( true );
-      vfsDirectory.setParent( scheme + "://" );
-      vfsDirectory.setDomain( vfsConnectionDetails.getDomain() );
-      vfsDirectory.setConnection( vfsConnectionDetails.getName() );
-      vfsDirectory.setPath( scheme + "://" + root.getName() );
+      vfsDirectory.setParent( scheme + "://" ); // TODO investigate how is this used?
+      vfsDirectory.setDomain( vfsConnectionDetails.getDomain() ); // TODO is this needed and does it make sense
+      vfsDirectory.setConnection( vfsConnectionDetails.getName() );  // TODO dont set once refactor calls to KettleVFS#getFileObject, VFSFile#create, and VFSDirectory#create
+      vfsDirectory.setPath( fileDomainRoot.getPath() + '/' + root.getName() ); // TODO use deliminator from another class or path.
       vfsDirectory.setRoot( NAME );
       files.add( vfsDirectory );
     }
-    this.roots.put( file.getConnection(), files );
+    this.roots.put( getKey( fileDomainRoot ), files );
     return files;
+  }
+
+  /**
+   * Get key for <code>file</code>
+   * @param vfsFile
+   * @return
+   */
+  protected String getKey( VFSFile vfsFile ) {
+    return vfsFile.getPath();
+  }
+
+  /**
+   * Determines if a <code>connectionDetails</code> has "buckets".
+   * @param connectionDetails
+   * @return
+   */
+  protected boolean hasBuckets( ConnectionDetails connectionDetails ) {
+    return connectionDetails instanceof VFSConnectionDetails && ( (VFSConnectionDetails) connectionDetails).hasBuckets();
   }
 
   /**
@@ -197,7 +244,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
    */
   @Override
   public List<VFSFile> getFiles( VFSFile file, String filters, VariableSpace space ) throws FileException {
-    if ( file.getPath().matches( DOMAIN_ROOT ) ) {
+    if (  isConnectionRoot( file ) ) {
       List<VFSFile> rootFiles = getRoot( file );
       if ( rootFiles != null ) {
         return rootFiles;
@@ -211,6 +258,16 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
       throw new FileNotFoundException( file.getPath(), TYPE );
     }
     return populateChildren( file, fileObject, filters );
+  }
+
+  /**
+   * Determines if <code>file</code>'s path is the URI domain root.
+   * @param file
+   * @return true if <code>file</code>'s path is only at domain, false otherwise.
+   */
+  protected boolean isConnectionRoot( VFSFile file ) {
+    return file != null && !StringUtil.isEmpty( file.getPath() )
+        && file.getPath().matches( CONNECTION_NAME_ROOT_REGEX );
   }
 
   /**

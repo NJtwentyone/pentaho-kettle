@@ -62,32 +62,33 @@ public class VFSFile extends BaseEntity implements File {
     this.connection = connection;
   }
 
-  public String getConnectionPath() {
+  public String getConnectionPath() { // TODO look into refactoring
     return getConnectionPath( getPath() );
   }
 
-  public String getConnectionParentPath() {
+  public String getConnectionParentPath() { // TODO look into refactoring
     return getConnectionPath( getParent() );
   }
 
-  private String getConnectionPath( String root ) {
+  private String getConnectionPath( String root ) { // TODO refactor this, should be able to delete and just use #getPath
     if ( root == null || connection == null ) {
       return null;
     }
-    if ( ConnectionFileProvider.SCHEME.equals( "pvfs") && root.startsWith( KettleVFS.SMB_SCHEME_COLON ) ) {
-      return root.replaceFirst( KettleVFS.SMB_SCHEME, "pvfs" );
-    } else {
-      String replacement = DOMAIN_ROOT + ( Utils.isEmpty( domain ) ? "" : domain );
-      StringBuilder path = new StringBuilder();
-      path.append( ConnectionFileProvider.SCHEME );
-      path.append( PROTOCOL_SEPARATOR );
-      path.append( connection );
-      if ( Utils.isEmpty( domain ) ) {
-        path.append( DELIMITER );
-      }
-      path.append( root.replaceAll( replacement, "" ) );
-      return path.toString();
-    }
+    return root; // NOTE should be pvfs://
+//    if ( ConnectionFileProvider.SCHEME.equals( "pvfs") && root.startsWith( KettleVFS.SMB_SCHEME_COLON ) ) {
+//      return root.replaceFirst( KettleVFS.SMB_SCHEME, "pvfs" );
+//    } else {
+//      String replacement = DOMAIN_ROOT + ( Utils.isEmpty( domain ) ? "" : domain );
+//      StringBuilder path = new StringBuilder();
+//      path.append( ConnectionFileProvider.SCHEME );
+//      path.append( PROTOCOL_SEPARATOR );
+//      path.append( connection );
+//      if ( Utils.isEmpty( domain ) ) {
+//        path.append( DELIMITER );
+//      }
+//      path.append( root.replaceAll( replacement, "" ) );
+//      return path.toString();
+//    }
   }
 
   public static VFSFile create( String parent, FileObject fileObject, String connection, String domain ) {
