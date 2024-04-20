@@ -366,12 +366,11 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
     List<VFSFile> deletedFiles = new ArrayList<>();
     for ( VFSFile file : files ) {
       try {
-        FileObject fileObject = KettleVFS
-          .getFileObject( file.getPath(), new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection(), space ) );
+        FileObject fileObject = getFileObject( file, space );
         if ( fileObject.delete( getAllFileSelector() ) > 0 ) {
           deletedFiles.add( file );
         }
-      } catch ( KettleFileException | FileSystemException kfe ) {
+      } catch ( FileException | FileSystemException kfe ) {
         // Ignore don't add
       }
     }
