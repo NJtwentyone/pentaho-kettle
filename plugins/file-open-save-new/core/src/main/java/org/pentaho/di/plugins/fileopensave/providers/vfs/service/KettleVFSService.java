@@ -27,7 +27,6 @@ import org.pentaho.di.core.exception.KettleFileException;
 import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.vfs.KettleVFS;
 import org.pentaho.di.plugins.fileopensave.api.providers.exception.FileException;
-import org.pentaho.di.plugins.fileopensave.providers.vfs.model.VFSFile;
 
 /**
  * Simple wrapper class around {@link KettleVFS}
@@ -40,15 +39,15 @@ public class KettleVFSService {
 
   /**
    * Wrapper around {@link KettleVFS#getFileObject(String, VariableSpace)}
-   * @param vsfFile - file object where <code>vfsFile.getPath()</code> returns a URI
+   * @param vfsPath - file object where <code>vfsFile.getPath()</code> returns a URI
    *  with the prefix or scheme equal to {@value  org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME}
    * @param space
    * @return
    * @throws FileException
    */
-  public FileObject getFileObject( VFSFile vsfFile, VariableSpace space ) throws FileException {
+  public FileObject getFileObject( String vfsPath, VariableSpace space ) throws FileException {
     try {
-      return KettleVFS.getFileObject( vsfFile.getPath(), space );
+      return KettleVFS.getFileObject( vfsPath, space );
     } catch ( KettleFileException kfe ) {
       throw new FileException( "error calling KettleVFS.getFileObject", kfe );
     }

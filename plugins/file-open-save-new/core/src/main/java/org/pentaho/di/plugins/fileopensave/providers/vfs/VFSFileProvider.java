@@ -474,17 +474,14 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
     try {
       overwriteStatus.setCurrentFileInProgressDialog( file.getPath() );
 
-      FileObject fileObject = KettleVFS
-        .getFileObject( file.getPath(), space, VFSHelper.getOpts( file.getPath(), file.getConnection(), space ) );
-      FileObject copyObject =
-        KettleVFS.getFileObject( toPath, new Variables(),
-          VFSHelper.getOpts( file.getPath(), file.getConnection(), space ) );
+      FileObject fileObject = getFileObject( file, space );
+      FileObject copyObject = getFileObject( toPath, space );
       overwriteStatus.promptOverwriteIfNecessary( copyObject.exists(), toPath,
         file.getEntityType().isDirectory() ? "folder" : "file"
         , null,
         "Note: Once this decision is made, the entire folder will be copied using a faster copy within the same"
           + " connection.  However, Any duplicate file encountered along the way can only be overwritten or skipped. "
-          + " It can not be renamed." );
+          + " It can not be renamed." ); // TODO move to i18n messages
       if ( overwriteStatus.isCancel() || overwriteStatus.isSkip() ) {
         return null;
       }
@@ -520,12 +517,11 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
    * @throws FileException
    */
   @Override public boolean fileExists( VFSFile dir, String path, VariableSpace space ) throws FileException {
-    path = sanitizeName( dir, path );
+    String sanitizeName = sanitizeName( dir, path ); // FIXME possible existing bug for copy + paste scenario, only works in overwrite scenario of <code>path<code/>, should check <code>dir</code> exists only
     try {
-      FileObject fileObject =
-        KettleVFS.getFileObject( path, space, VFSHelper.getOpts( path, dir.getConnection(), space ) );
+      FileObject fileObject = getFileObject( sanitizeName, space );
       return fileObject.exists();
-    } catch ( KettleFileException | FileSystemException e ) {
+    } catch ( FileException | FileSystemException e ) {
       throw new FileException();
     }
   }
@@ -636,10 +632,10 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
     if ( newPath.startsWith( ConnectionFileProvider.SCHEME + "://" ) ) {
       return newPath;
     }
-      return getConnectionProvider( newPath ).sanitizeName( newPath );
+      return getConnectionProvider( newPath ).sanitizeName( newPath ); // FIXME might be obsolete
   }
 
-  private VFSConnectionProvider<VFSConnectionDetails> getConnectionProvider( String key ) {
+  private VFSConnectionProvider<VFSConnectionDetails> getConnectionProvider( String key ) { // FIXME might be obsolete
     @SuppressWarnings( "unchecked" )
     VFSConnectionProvider<VFSConnectionDetails> vfsConnectionProvider =
       (VFSConnectionProvider<VFSConnectionDetails>) ConnectionManager.getInstance()
@@ -666,15 +662,27 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
   }
 
   /**
-   * Wrapper around {@link KettleVFSService#getFileObject(VFSFile, VariableSpace)}
+   * Wrapper around {@link KettleVFSService#getFileObject(String, VariableSpace)}
    * @param file
    * @param space
    * @return
    * @throws FileException
    */
   protected FileObject getFileObject( VFSFile file, VariableSpace space )  throws FileException {
-    return kettleVFSService.getFileObject( file, space );
+    return getFileObject( file.getPath(), space );
   }
+
+  /**
+   * Wrapper around {@link KettleVFSService#getFileObject(String, VariableSpace)}
+   * @param vfsPath
+   * @param space
+   * @return
+   * @throws FileException
+   */
+  protected FileObject getFileObject( String vfsPath, VariableSpace space )  throws FileException {
+    return kettleVFSService.getFileObject( vfsPath, space ); // TODO maybe just need Supplier instead of whole new class
+  }
+
 
   private FileSelector getAllFileSelector() {
     return new FileSelector(){
