@@ -335,9 +335,8 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
 
   @Override public VFSFile getFile( VFSFile file, VariableSpace space ) {
     try {
-      FileObject fileObject = KettleVFS
-        .getFileObject( file.getPath(), new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection(), space ) );
-      if ( !fileObject.exists() ) {
+      FileObject fileObject = getFileObject( file, space );
+      if ( !fileObject.exists() ) { // NOTE: parent call to FileController#getFile(File) is not used
         return null;
       }
       String parent = null;
@@ -351,7 +350,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
       } else {
         return VFSFile.create( parent, fileObject, null, file.getDomain() );
       }
-    } catch ( KettleFileException | FileSystemException e ) {
+    } catch ( FileException | FileSystemException e ) {
       // File does not exist
     }
     return null;
