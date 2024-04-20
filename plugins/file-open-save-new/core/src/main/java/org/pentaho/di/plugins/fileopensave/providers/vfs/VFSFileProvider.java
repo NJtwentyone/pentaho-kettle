@@ -382,14 +382,12 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
    * @return
    */
   @Override public VFSFile add( VFSFile folder, VariableSpace space ) {
-    try {
-      FileObject fileObject = KettleVFS
-        .getFileObject( folder.getPath(), space,
-          VFSHelper.getOpts( folder.getPath(), folder.getConnection(), space ) );
+    try { // NOTE: parent call from FileController#add(File) is not used for VFSFileProvider
+      FileObject fileObject = getFileObject( folder.getPath(), space );
       fileObject.createFolder();
       String parent = folder.getPath().substring( 0, folder.getPath().length() - 1 );
       return VFSDirectory.create( parent, fileObject, folder.getConnection(), folder.getDomain() );
-    } catch ( KettleFileException | FileSystemException ignored ) {
+    } catch ( FileException | FileSystemException ignored ) {
       // Ignored
     }
     return null;
@@ -647,15 +645,13 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
     this.roots = new HashMap<>();
   }
 
-  @Override public VFSFile createDirectory( String parentPath, VFSFile file, String newDirectoryName ) {
+  @Override public VFSFile createDirectory( String parentPath, VFSFile fileParent, String newDirectoryName ) {
     try {
-      FileObject fileObject = KettleVFS
-        .getFileObject( file.getPath() + VFSFile.DELIMITER + newDirectoryName, new Variables(),
-          VFSHelper.getOpts( file.getPath(), file.getConnection(), new Variables() ) );
+      String newDirectoryPath = fileParent.getPath() + VFSFile.DELIMITER + newDirectoryName; // TODO avoid URI manipulation
+      FileObject fileObject = getFileObject( newDirectoryPath, new Variables() );
       fileObject.createFolder();
-
-      return VFSDirectory.create( parentPath, fileObject, file.getConnection(), file.getDomain() );
-    } catch ( KettleFileException | FileSystemException ignored ) {
+      return VFSDirectory.create( parentPath, fileObject, fileParent.getConnection(), fileParent.getDomain() ); // TODO "should" refactor to call VFSFileProvider#add( VFSFile folder, VariableSpace space ) similar as other classes in org.pentaho.di.plugins.fileopensave, could just call #add(..) with dummy VSFFile.getpath=newDirectoryPath
+    } catch ( FileException | FileSystemException ignored ) {
       // Ignored
     }
     return null;

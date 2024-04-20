@@ -196,7 +196,7 @@ public class FileController {
     }
   }
 
-  public Result add( File folder ) {
+  public Result add( File folder ) { // TESTING
     try {
       FileProvider<File> fileProvider = providerService.get( folder.getProvider() );
       File newFile = fileProvider.add( folder, space );
