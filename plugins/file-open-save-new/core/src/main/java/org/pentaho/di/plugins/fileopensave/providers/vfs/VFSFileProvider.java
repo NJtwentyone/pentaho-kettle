@@ -53,6 +53,7 @@ import org.pentaho.di.plugins.fileopensave.providers.vfs.model.VFSDirectory;
 import org.pentaho.di.plugins.fileopensave.providers.vfs.model.VFSFile;
 import org.pentaho.di.plugins.fileopensave.providers.vfs.model.VFSLocation;
 import org.pentaho.di.plugins.fileopensave.providers.vfs.model.VFSTree;
+import org.pentaho.di.plugins.fileopensave.providers.vfs.service.KettleVFSService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -91,6 +92,16 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
 
   private Supplier<ConnectionManager> connectionManagerSupplier = ConnectionManager::getInstance;
   private Map<String, List<VFSFile>> roots = new HashMap<>();
+
+  protected KettleVFSService kettleVFSService;
+
+  public VFSFileProvider() {
+    this( new KettleVFSService() );
+  }
+
+  public VFSFileProvider( KettleVFSService kettleVFSService ) {
+    this.kettleVFSService = kettleVFSService;
+  }
 
   @Override public Class<VFSFile> getFileClass() {
     return VFSFile.class;
@@ -252,9 +263,8 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
     }
     FileObject fileObject;
     try {
-      fileObject = KettleVFS
-        .getFileObject( file.getPath(), new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection(), space ) );
-    } catch ( KettleFileException e ) {
+      fileObject = getFileObject( file, space );
+    } catch ( FileException e ) {
       throw new FileNotFoundException( file.getPath(), TYPE );
     }
     return populateChildren( file, fileObject, filters );
@@ -655,6 +665,17 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
       // Ignored
     }
     return null;
+  }
+
+  /**
+   * Wrapper around {@link KettleVFSService#getFileObject(VFSFile, VariableSpace)}
+   * @param file
+   * @param space
+   * @return
+   * @throws FileException
+   */
+  protected FileObject getFileObject( VFSFile file, VariableSpace space )  throws FileException {
+    return kettleVFSService.getFileObject( file, space );
   }
 
   private FileSelector getAllFileSelector() {
