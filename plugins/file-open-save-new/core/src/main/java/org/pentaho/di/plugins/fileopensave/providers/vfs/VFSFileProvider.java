@@ -528,10 +528,9 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
   @Override
   public InputStream readFile( VFSFile file, VariableSpace space ) {
     try {
-      FileObject fileObject = KettleVFS
-        .getFileObject( file.getPath(), new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection(), space ) );
+      FileObject fileObject = getFileObject( file.getPath(), space );
       return fileObject.getContent().getInputStream();
-    } catch ( KettleException | FileSystemException e ) {
+    } catch ( FileException | FileSystemException e ) {
       return null;
     }
   }
@@ -544,16 +543,10 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
    * @return
    * @throws FileException
    */
-  @Override public VFSFile writeFile( InputStream inputStream, VFSFile destDir,
-                                      String path, OverwriteStatus overwriteStatus, VariableSpace space )
-    throws FileException {
-    FileObject fileObject = null;
-    try {
-      fileObject = KettleVFS
-        .getFileObject( path, new Variables(), VFSHelper.getOpts( destDir.getPath(), destDir.getConnection(), space ) );
-    } catch ( KettleException ke ) {
-      throw new FileException();
-    }
+  @Override
+  public VFSFile writeFile( InputStream inputStream, VFSFile destDir, String path, OverwriteStatus overwriteStatus,
+                            VariableSpace space ) throws FileException {
+    FileObject fileObject = getFileObject( path, space );
     if ( fileObject != null ) {
       try ( OutputStream outputStream = fileObject.getContent().getOutputStream(); ) {
         IOUtils.copy( inputStream, outputStream );
