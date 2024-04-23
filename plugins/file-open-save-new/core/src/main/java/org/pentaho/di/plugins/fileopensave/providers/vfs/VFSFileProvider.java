@@ -424,10 +424,8 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
    */
   private VFSFile doMove( VFSFile file, String newPath, OverwriteStatus overwriteStatus, VariableSpace space ) {
     try {
-      FileObject fileObject = KettleVFS
-        .getFileObject( file.getPath(), new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection(), space ) );
-      FileObject renameObject = KettleVFS
-        .getFileObject( newPath, new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection(), space ) );
+      FileObject fileObject = getFileObject( file.getPath(), space );
+      FileObject renameObject = getFileObject( newPath, space );
 
       if ( renameObject.exists() ) {
         overwriteStatus.promptOverwriteIfNecessary( file.getPath(),
@@ -441,8 +439,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
             VFSDirectory.create( renameObject.getParent().getPath().toString(), renameObject, file.getConnection(),
               file.getDomain() );
           newPath = getNewName( vfsDir, newPath, space  );
-          renameObject = KettleVFS
-            .getFileObject( newPath, new Variables(), VFSHelper.getOpts( file.getPath(), file.getConnection(), space ) );
+          renameObject = getFileObject( newPath, space );
         }
       }
       fileObject.moveTo( renameObject );
@@ -453,7 +450,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
         return VFSFile.create( renameObject.getParent().getPublicURIString(), renameObject, file.getConnection(),
           file.getDomain() );
       }
-    } catch ( KettleFileException | FileSystemException| FileException e ) {
+    } catch ( FileException | FileSystemException e ) {
       return null;
     }
   }
