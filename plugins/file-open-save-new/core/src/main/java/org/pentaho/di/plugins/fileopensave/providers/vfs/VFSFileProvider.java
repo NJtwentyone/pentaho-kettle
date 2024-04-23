@@ -486,8 +486,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
         toDirectory = VFSDirectory.create( copyObject.getParent().getPublicURIString(), copyObject,
           file.getConnection(), file.getDomain() );
         String newDestination = getNewName( toDirectory, copyObject.getName().toString(), space );
-        copyObject = KettleVFS.getFileObject( newDestination, new Variables(), VFSHelper.getOpts( file.getPath(),
-          file.getConnection(), space ) );
+        copyObject = getFileObject( newDestination, space );
       }
 
       copyObject.copyFrom( fileObject, new OverwriteAwareFileSelector( overwriteStatus, fileObject, copyObject,
@@ -500,7 +499,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
         return VFSFile
           .create( copyObject.getParent().getPublicURIString(), fileObject, file.getConnection(), file.getDomain() );
       }
-    } catch ( KettleFileException | FileSystemException e ) {
+    } catch ( FileException | FileSystemException e ) {
       throw new FileException();
     }
   }
@@ -596,9 +595,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
     int i = 1;
     String testName = sanitizeName( destDir, newPath );
     try {
-      while ( KettleVFS
-        .getFileObject( testName, new Variables(), VFSHelper.getOpts( testName, destDir.getConnection(), space ) )
-        .exists() ) {
+      while ( getFileObject( testName,  space ).exists() ) {// TODO possible bug, what is destDir is bad path ?
         if ( Utils.isValidExtension( extension ) ) {
           testName = sanitizeName( destDir, parent + name + "_" + i + "." + extension );
         } else {
@@ -606,7 +603,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
         }
         i++;
       }
-    } catch ( KettleFileException | FileSystemException e ) {
+    } catch ( FileException | FileSystemException e ) { // TODO how is the function determining between bad directory and found testName is an available name?
       return testName;
     }
     return testName;
