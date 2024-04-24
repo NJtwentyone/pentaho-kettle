@@ -65,8 +65,21 @@ public class Element {
   private String path = "";
   private String provider = "";
   private String repositoryName = "";//For repository types
-  //For VFS types
-  private String domain = "";
+
+  /**
+   * Separate VFS domain variable is no longer needed.
+   * @deprecated
+   * The domain handled is internally with the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
+   */
+  @Deprecated
+  private String domain = "";  //For VFS types
+
+  /**
+   * Separate VFS connection name variable is no longer needed.
+   * @deprecated
+   * The connection name is in the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
+   */
+  @Deprecated
   private String connection = ""; //The VFS connection name
 
   @VisibleForTesting
@@ -169,14 +182,32 @@ public class Element {
     return repositoryName;
   }
 
+  /**
+   * Separate VFS domain variable is no longer needed.
+   * @deprecated
+   * The domain handled is internally with the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
+   */
+  @Deprecated
   public String getDomain() {
     return domain;
   }
 
+  /**
+   * Separate VFS domain variable is no longer needed.
+   * @deprecated
+   * The domain handled is internally with the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
+   */
+  @Deprecated
   public void setDomain( String domain ) {
     this.domain = domain;
   }
 
+  /**
+   * Separate VFS connection name variable is no longer needed.
+   * @deprecated
+   * The connection name is in the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
+   */
+  @Deprecated
   public String getConnection() {
     return connection;
   }
