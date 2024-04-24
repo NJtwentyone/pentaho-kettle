@@ -199,10 +199,22 @@ public class FileDialogOperation {
     this.path = path;
   }
 
+  /**
+   * Separate VFS connection name variable is no longer needed.
+   * @deprecated
+   * The connection name is in the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
+   */
+  @Deprecated
   public String getConnection() {
     return connection;
   }
 
+  /**
+   * Separate VFS connection name variable is no longer needed.
+   * @deprecated
+   * The connection name is in the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
+   */
+  @Deprecated
   public void setConnection( String connection ) {
     this.connection = connection;
   }

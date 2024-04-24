@@ -54,10 +54,22 @@ public class VFSFile extends BaseEntity implements File {
     return VFSFileProvider.TYPE;
   }
 
+  /**
+   * Separate VFS connection name variable is no longer needed.
+   * @deprecated
+   * The connection name is in the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
+   */
+  @Deprecated
   public String getConnection() {
     return connection;
   }
 
+  /**
+   * Separate VFS connection name variable is no longer needed.
+   * @deprecated
+   * The connection name is in the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
+   */
+  @Deprecated
   public void setConnection( String connection ) {
     this.connection = connection;
   }
@@ -126,10 +138,22 @@ public class VFSFile extends BaseEntity implements File {
     return vfsFile;
   }
 
+  /**
+   * Separate VFS domain variable is no longer needed.
+   * @deprecated
+   * The domain handled is internally with the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
+   */
+  @Deprecated
   public String getDomain() {
     return domain;
   }
 
+  /**
+   * Separate VFS domain variable is no longer needed.
+   * @deprecated
+   * The domain handled is internally with the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
+   */
+  @Deprecated
   public void setDomain( String domain ) {
     this.domain = domain;
   }
