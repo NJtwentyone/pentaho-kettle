@@ -85,8 +85,7 @@ public class ElementTreeDropAdapter extends ViewerDropAdapter {
         String name = parent.replaceAll( "^.*[\\/\\\\]", "" ); //Strip off the path leaving file name
         // Making parent of target the new actual target to use.
         target =
-          new Element( name, target.calcParentEntityType(), parent, target.getProvider(), target.getRepositoryName(),
-            target.getDomain(), target.getConnection() );
+          new Element( name, target.calcParentEntityType(), parent, target.getProvider(), target.getRepositoryName() ); // TESTING
       }
     }
 
