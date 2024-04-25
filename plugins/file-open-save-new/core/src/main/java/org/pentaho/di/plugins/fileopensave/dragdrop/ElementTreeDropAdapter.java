@@ -71,7 +71,6 @@ public class ElementTreeDropAdapter extends ViewerDropAdapter {
       errorBox.open();
       return false;
     }
-    Util.rawElementMassage( genericTarget );
     Element target = new Element( genericTarget );
 
     log.logDebug( "TreeDrop: last target element was \"" + target.getPath() + "\" location was " + location );

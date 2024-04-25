@@ -84,7 +84,6 @@ public class ElementDragListener extends DragSourceAdapter {
           }
         }
       }
-      Util.rawElementMassage( rawElements[ i ] );
     }
     if ( ElementTransfer.getInstance().isSupportedType( event.dataType ) ) {
       event.data = rawElements;
