@@ -46,6 +46,7 @@ import org.pentaho.di.ui.core.events.dialog.extension.SpoonOpenExtensionPointWra
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -268,11 +269,9 @@ public abstract class SelectionAdapterFileDialog<T> extends SelectionAdapter {
 
   void setProvider( FileDialogOperation op, FileObject initalFile ) { // LAST CHANGED BACKLOG-36524
     if ( op.getProviderFilter() == null ) {
-      if ( op.getConnection() != null ) {
-        op.setProvider( ProviderFilterType.VFS.toString() );
-      } else if ( isConnectedToRepository() ) {
+      if ( isConnectedToRepository() ) {
         op.setProvider( ProviderFilterType.REPOSITORY.toString() );
-      } else if ( ConnectionFileProvider.SCHEME.equalsIgnoreCase( initalFile.getURI().getScheme() ) ) {
+      } else if ( isConnectionFile( initalFile ) ) {
         op.setProvider( ProviderFilterType.VFS.toString() );
       } else if ( "hc".equalsIgnoreCase( initalFile.getURI().getScheme() ) ) {
         op.setProvider( ProviderFilterType.CLUSTERS.toString() );
@@ -280,7 +279,7 @@ public abstract class SelectionAdapterFileDialog<T> extends SelectionAdapter {
         op.setProvider( ProviderFilterType.LOCAL.toString() );
       }
     } else if ( op.getProviderFilter().equalsIgnoreCase( ProviderFilterType.DEFAULT.toString() ) ) {
-      if ( op.getConnection() != null ) { // FIXME why can't this do check for pvfs like "hc" below
+      if ( isConnectionFile( initalFile ) ) { // FIXME why can't this do check for pvfs like "hc" below
         op.setProvider( ProviderFilterType.VFS.toString() );
       } else if ( "hc".equalsIgnoreCase( initalFile.getURI().getScheme() ) ) {
         op.setProvider( ProviderFilterType.CLUSTERS.toString() );
@@ -288,6 +287,16 @@ public abstract class SelectionAdapterFileDialog<T> extends SelectionAdapter {
         op.setProvider( ProviderFilterType.LOCAL.toString() );
       }
     }
+  }
+
+  /**
+   * Determines if a <code>fileObject</code> is of type {@value ConnectionFileProvider#SCHEME}
+   * @param fileObject
+   * @return if connection file type, false otherwise.
+   */
+  protected boolean isConnectionFile( FileObject fileObject ) {
+    return fileObject != null && fileObject.getURI() != null
+        && ConnectionFileProvider.SCHEME.equalsIgnoreCase( fileObject.getURI().getScheme() );
   }
 
   void setConnection( FileDialogOperation op, FileObject initialFile ) {
