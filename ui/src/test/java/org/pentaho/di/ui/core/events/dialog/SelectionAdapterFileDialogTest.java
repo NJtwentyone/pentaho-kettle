@@ -39,6 +39,7 @@ import org.pentaho.di.ui.core.events.dialog.extension.ExtensionPointWrapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -329,6 +330,33 @@ public class SelectionAdapterFileDialogTest {
       extensionPointWrapper );
 
     assertFalse( testInstance2.isConnectedToRepository() );
+  }
+
+  @Test
+  public void testSetProvider() throws Exception {
+
+    // TEST PVFS , ProviderFilter null
+    String pvfsPath = "pvfs://someConnectionName/dirA/dir2/dirC/randomFile.txt";
+    URI uriPvfs = new URI( pvfsPath );
+    FileObject foPvfs = mock( FileObject.class );
+    when( foPvfs.getURI() ).thenReturn( uriPvfs );
+
+    FileDialogOperation fileDialogOperationPvfs_ProviderFilterNull = createFileDialogOperation();
+    fileDialogOperationPvfs_ProviderFilterNull.setProviderFilter( null );
+
+    testInstance.setProvider( fileDialogOperationPvfs_ProviderFilterNull, foPvfs );
+
+    assertEquals( ProviderFilterType.VFS.toString(), fileDialogOperationPvfs_ProviderFilterNull.getProvider() );
+
+
+    // TEST PVFS , ProviderFilter Default
+    FileDialogOperation fileDialogOperationPvfs_ProviderFilterDefault = createFileDialogOperation();
+    fileDialogOperationPvfs_ProviderFilterDefault.setProviderFilter( ProviderFilterType.DEFAULT.toString() );
+
+    testInstance.setProvider( fileDialogOperationPvfs_ProviderFilterDefault, foPvfs );
+
+    assertEquals( ProviderFilterType.VFS.toString(), fileDialogOperationPvfs_ProviderFilterDefault.getProvider() );
+
   }
 
   protected FileDialogOperation createFileDialogOperation() {
