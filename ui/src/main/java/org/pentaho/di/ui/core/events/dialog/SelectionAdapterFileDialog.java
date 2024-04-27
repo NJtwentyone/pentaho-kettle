@@ -183,8 +183,8 @@ public abstract class SelectionAdapterFileDialog<T> extends SelectionAdapter {
     FileDialogOperation fileDialogOperation = createFileDialogOperation( selectionOperation );
 
     setProviderFilters( fileDialogOperation, providerFilters );
-    setConnection( fileDialogOperation, initialFile );
-    setProvider( fileDialogOperation, initialFile );
+    setConnection( fileDialogOperation, initialFile ); // TODO DELETE ME only used for PVFS, using full PVFS URI connection name in URI
+    setProvider( fileDialogOperation, initialFile ); // last changed BACKLOG-36524
 
     String connectionFilter = connectionFilterTypes.stream()
       .map( Enum::toString ).collect( Collectors.joining( "," ) );
@@ -266,7 +266,7 @@ public abstract class SelectionAdapterFileDialog<T> extends SelectionAdapter {
     }
   }
 
-  void setProvider( FileDialogOperation op, FileObject initalFile ) {
+  void setProvider( FileDialogOperation op, FileObject initalFile ) { // LAST CHANGED BACKLOG-36524
     if ( op.getProviderFilter() == null ) {
       if ( op.getConnection() != null ) {
         op.setProvider( ProviderFilterType.VFS.toString() );
@@ -280,7 +280,7 @@ public abstract class SelectionAdapterFileDialog<T> extends SelectionAdapter {
         op.setProvider( ProviderFilterType.LOCAL.toString() );
       }
     } else if ( op.getProviderFilter().equalsIgnoreCase( ProviderFilterType.DEFAULT.toString() ) ) {
-      if ( op.getConnection() != null ) {
+      if ( op.getConnection() != null ) { // FIXME why can't this do check for pvfs like "hc" below
         op.setProvider( ProviderFilterType.VFS.toString() );
       } else if ( "hc".equalsIgnoreCase( initalFile.getURI().getScheme() ) ) {
         op.setProvider( ProviderFilterType.CLUSTERS.toString() );
@@ -291,7 +291,7 @@ public abstract class SelectionAdapterFileDialog<T> extends SelectionAdapter {
   }
 
   void setConnection( FileDialogOperation op, FileObject initialFile ) {
-    if ( op.getConnection() == null && ConnectionFileProvider.SCHEME.equalsIgnoreCase( initialFile.getURI().getScheme() ) ) {
+    if ( op.getConnection() == null && ConnectionFileProvider.SCHEME.equalsIgnoreCase( initialFile.getURI().getScheme() ) ) { // TESTING WHY is this need? BACKLOG-36524
       // pvfs connection format is pvfs://<connection_name>/<connection_path>, so extract connection_name
       op.setConnection( ((ConnectionFileName) initialFile.getName()).getConnection() );
     }

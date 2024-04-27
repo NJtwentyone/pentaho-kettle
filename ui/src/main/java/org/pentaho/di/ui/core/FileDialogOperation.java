@@ -215,7 +215,7 @@ public class FileDialogOperation {
    * The connection name is in the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
    */
   @Deprecated
-  public void setConnection( String connection ) {
+  public void setConnection( String connection ) { // TESTING
     this.connection = connection;
   }
 
