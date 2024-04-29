@@ -54,11 +54,14 @@ import org.pentaho.di.plugins.fileopensave.providers.vfs.service.KettleVFSServic
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Created by bmorrise on 2/14/19.
@@ -67,6 +70,8 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
 
   public static final String NAME = "VFS Connections";
   public static final String TYPE = "vfs";
+
+  public static final String CONNECTION_SCHEME = ConnectionFileSystem.DOMAIN_ROOT;
 
   /**
    * Regular expression for connection name
@@ -83,7 +88,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
    * Regular expression for the expected pvfs path that only contains the connection name
    * ie "pvfs://someConnectionName".
    */
-  protected static final String CONNECTION_NAME_ROOT_REGEX = ConnectionFileSystem.DOMAIN_ROOT
+  protected static final String CONNECTION_NAME_ROOT_REGEX = CONNECTION_SCHEME
       + CONNECTION_NAME_REGEX + OPTIONAL_FOLDER_SLASH_REGEX;
 
   private Supplier<ConnectionManager> connectionManagerSupplier = ConnectionManager::getInstance;
@@ -109,6 +114,26 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
 
   @Override public String getType() {
     return TYPE;
+  }
+
+  /**
+   * Determines is a <code>filePath</code> is a VFS file
+   * @param filePath
+   * @return true if VFS file, false otherwise.
+   */
+  public boolean isSupported( String filePath ) {
+    if ( filePath == null ) {
+      return false;
+    }
+    boolean ret = false;
+    try {
+      URI uriFilePath = new URI( filePath );
+      String testScheme = uriFilePath.getScheme() + "://";
+      ret = uriFilePath.getScheme() != null && testScheme.matches( ConnectionFileSystem.DOMAIN_ROOT );
+    } catch ( PatternSyntaxException | URISyntaxException e ) {
+      // DO NOTHING
+    }
+    return ret;
   }
 
   /**

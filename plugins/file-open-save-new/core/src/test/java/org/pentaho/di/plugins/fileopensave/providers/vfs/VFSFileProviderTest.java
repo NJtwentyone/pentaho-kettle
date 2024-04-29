@@ -23,8 +23,10 @@
 package org.pentaho.di.plugins.fileopensave.providers.vfs;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 import org.pentaho.di.connections.ConnectionDetails;
 import org.pentaho.di.connections.vfs.VFSConnectionDetails;
+import org.pentaho.di.plugins.fileopensave.extension.FileOpenSaveExtensionPoint;
 import org.pentaho.di.plugins.fileopensave.providers.vfs.model.VFSFile;
 
 import static org.mockito.Mockito.mock;
@@ -109,6 +111,28 @@ public class VFSFileProviderTest extends TestCase {
     VFSFile vfsFile = new VFSFile();
     vfsFile.setPath( path );
     return vfsFile;
+  }
+
+  @Test
+  public void testIsSupported() throws Exception {
+
+    VFSFileProvider testInstance = new VFSFileProvider();
+
+    assertFalse( testInstance.isSupported( null ) );
+
+    assertFalse( testInstance.isSupported( "" ) );
+
+    assertFalse( testInstance.isSupported( "    " ) );
+
+    assertFalse( testInstance.isSupported( "someGarbage" ) );
+
+    assertFalse( testInstance.isSupported( "/someUser/someUnixFile" ) );
+
+    assertFalse( testInstance.isSupported( "T:\\Users\\RandomSUser\\Documents\\someWindowsFile" ) );
+
+    assertFalse( testInstance.isSupported( "//home/randomUser/randomFile.rpt" ) );
+
+    assertTrue( testInstance.isSupported( "pvfs://someConenction/someFilePath" ) );
   }
 
 
