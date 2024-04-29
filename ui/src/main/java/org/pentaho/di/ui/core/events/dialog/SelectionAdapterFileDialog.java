@@ -184,7 +184,6 @@ public abstract class SelectionAdapterFileDialog<T> extends SelectionAdapter {
     FileDialogOperation fileDialogOperation = createFileDialogOperation( selectionOperation );
 
     setProviderFilters( fileDialogOperation, providerFilters );
-    setConnection( fileDialogOperation, initialFile ); // TODO DELETE ME only used for PVFS, using full PVFS URI connection name in URI
     setProvider( fileDialogOperation, initialFile ); // last changed BACKLOG-36524
 
     String connectionFilter = connectionFilterTypes.stream()
@@ -297,13 +296,6 @@ public abstract class SelectionAdapterFileDialog<T> extends SelectionAdapter {
   protected boolean isConnectionFile( FileObject fileObject ) {
     return fileObject != null && fileObject.getURI() != null
         && ConnectionFileProvider.SCHEME.equalsIgnoreCase( fileObject.getURI().getScheme() );
-  }
-
-  void setConnection( FileDialogOperation op, FileObject initialFile ) {
-    if ( op.getConnection() == null && ConnectionFileProvider.SCHEME.equalsIgnoreCase( initialFile.getURI().getScheme() ) ) { // TESTING WHY is this need? BACKLOG-36524
-      // pvfs connection format is pvfs://<connection_name>/<connection_path>, so extract connection_name
-      op.setConnection( ((ConnectionFileName) initialFile.getName()).getConnection() );
-    }
   }
 
   /**
