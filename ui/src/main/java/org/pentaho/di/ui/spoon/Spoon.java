@@ -4651,7 +4651,7 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
         // We are able to find the index of forward or backward slash set the folder to be the path before slash
         String folder = lastFileOpened.substring( 0, parentIndex );
         fileDialogOperation.setPath( folder );
-        fileDialogOperation.setConnection( lastFileOpenedConnection );
+        fileDialogOperation.setConnection(null /* lastFileOpenedConnection */ ); // TESTING
         fileDialogOperation.setProvider( lastFileOpenedProvider );
       } else {
         // We were unable to find the folder path from the last file opened. We will set the file open dialog to
@@ -4775,7 +4775,7 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
       setFileOperatioPathForNonRepositoryFile(fileDialogOperation, meta, export );
     }
     if ( meta instanceof VariableSpace ) {
-      fileDialogOperation.setConnection( ( (VariableSpace) meta ).getVariable( CONNECTION ) );
+      fileDialogOperation.setConnection( null /*( (VariableSpace) meta ).getVariable( CONNECTION )*/ ); //TESTING
     }
     boolean saved = false;
     try {
