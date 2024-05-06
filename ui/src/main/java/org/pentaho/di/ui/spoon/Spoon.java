@@ -4604,6 +4604,12 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
     }
   }
 
+  /**
+   * Separate VFS connection name variable is no longer needed.
+   * @deprecated
+   * The connection name is in the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
+   */
+  @Deprecated
   private String lastFileOpenedConnection;
   private String lastFileOpenedProvider;
 
@@ -4688,7 +4694,7 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
         openFile( path, variables, importFile );
         lastFileOpened = path;
         props.setLastUsedLocalFile( path );
-        lastFileOpenedConnection = fileDialogOperation.getConnection();
+        lastFileOpenedConnection = /*fileDialogOperation.getConnection();*/ null; // TESTING
         lastFileOpenedProvider = fileDialogOperation.getProvider();
       }
     } catch ( KettleException e ) {
@@ -4796,7 +4802,7 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
         String filename = fileDialogOperation.getPath() + File.separator + fileDialogOperation.getFilename();
         lastFileOpened = filename;
         props.setLastUsedLocalFile( filename );
-        lastFileOpenedConnection = fileDialogOperation.getConnection();
+        lastFileOpenedConnection = /*fileDialogOperation.getConnection();*/ null; // TESTING
         lastFileOpenedProvider = fileDialogOperation.getProvider();
         if ( lastFileOpenedConnection != null && meta instanceof VariableSpace ) {
           ( (VariableSpace) meta ).setVariable( CONNECTION, lastFileOpenedConnection );
@@ -5816,7 +5822,7 @@ public class Spoon extends ApplicationWindow implements AddUndoPositionInterface
       if (fileDialogOperation.getPath() != null && fileDialogOperation.getFilename() != null) {
         zipFilename = fileDialogOperation.getPath() + File.separator + fileDialogOperation.getFilename();
         lastFileOpened = zipFilename;
-        lastFileOpenedConnection = fileDialogOperation.getConnection();
+        lastFileOpenedConnection = /*fileDialogOperation.getConnection();*/ null; // TESTING
         lastFileOpenedProvider = fileDialogOperation.getProvider();
         FileObject zipFileObject = KettleVFS.getFileObject(zipFilename);
         if (zipFileObject.exists()) {
