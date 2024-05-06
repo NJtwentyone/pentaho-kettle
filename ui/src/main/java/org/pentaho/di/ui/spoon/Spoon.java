@@ -374,6 +374,12 @@ import java.util.Objects;
 public class Spoon extends ApplicationWindow implements AddUndoPositionInterface, TabListener, SpoonInterface,
   OverwritePrompter, PDIObserver, LifeEventHandler, XulEventSource, XulEventHandler, PartitionSchemasProvider {
   private static final String userHomeDir = System.getProperty( "user.home" );
+  /**
+   * Separate VFS connection name variable is no longer needed.
+   * @deprecated
+   * The connection name is in the URI since full {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME } paths are being used.
+   */
+  @Deprecated
   public static final String CONNECTION = "connection";
   private static final String XML_EXTENSION = "xml";
   public static final String SPOON_DIALOG_PROMPT_OVERWRITE_FILE = "Spoon.Dialog.PromptOverwriteFile.";
