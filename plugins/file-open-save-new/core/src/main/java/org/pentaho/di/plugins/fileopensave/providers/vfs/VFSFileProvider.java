@@ -343,10 +343,10 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
       FileObject[] children = getChildren( fileObject );
       for ( FileObject child : children ) {
         if ( hasChildren( child ) ) {
-          files.add( VFSDirectory.create( parent.getPath(), child, parent.getConnection(), parent.getDomain() ) );
+          files.add( createVFSDirectory( parent.getPath(), child ) );
         } else {
           if ( child != null && Utils.matches( child.getName().getBaseName(), filters ) ) {
-            files.add( VFSFile.create( parent.getPath(), child, parent.getConnection(), parent.getDomain() ) );
+            files.add( createVFSFile( parent.getPath(), child ) );
           }
         }
       }
@@ -367,9 +367,9 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
         parent = fileObject.getURL().getProtocol() + "://";
       }
       if ( fileObject.getType().equals( FileType.FOLDER ) ) {
-        return VFSDirectory.create( parent, fileObject, null, file.getDomain() );
+        return createVFSDirectory( parent, fileObject );
       } else {
-        return VFSFile.create( parent, fileObject, null, file.getDomain() );
+        return createVFSFile( parent, fileObject );
       }
     } catch ( FileException | FileSystemException e ) {
       // File does not exist
@@ -407,7 +407,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
       FileObject fileObject = getFileObject( folder.getPath(), space );
       fileObject.createFolder();
       String parent = folder.getPath().substring( 0, folder.getPath().length() - 1 );
-      return VFSDirectory.create( parent, fileObject, folder.getConnection(), folder.getDomain() );
+      return createVFSDirectory( parent, fileObject );
     } catch ( FileException | FileSystemException ignored ) {
       // Ignored
     }
@@ -457,19 +457,16 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
           return null;
         } else if ( overwriteStatus.isRename() ) {
           VFSDirectory vfsDir =
-            VFSDirectory.create( renameObject.getParent().getPath().toString(), renameObject, file.getConnection(),
-              file.getDomain() );
+            createVFSDirectory( renameObject.getParent().getPath().toString(), renameObject );
           newPath = getNewName( vfsDir, newPath, space  );
           renameObject = getFileObject( newPath, space );
         }
       }
       fileObject.moveTo( renameObject );
       if ( file instanceof VFSDirectory ) {
-        return VFSDirectory.create( renameObject.getParent().getPublicURIString(), renameObject, file.getConnection(),
-          file.getDomain() );
+        return createVFSDirectory( renameObject.getParent().getPublicURIString(), renameObject );
       } else {
-        return VFSFile.create( renameObject.getParent().getPublicURIString(), renameObject, file.getConnection(),
-          file.getDomain() );
+        return createVFSFile( renameObject.getParent().getPublicURIString(), renameObject );
       }
     } catch ( FileException | FileSystemException e ) {
       return null;
@@ -504,8 +501,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
 
       VFSFile toDirectory = null;
       if ( overwriteStatus.isRename() ) {
-        toDirectory = VFSDirectory.create( copyObject.getParent().getPublicURIString(), copyObject,
-          file.getConnection(), file.getDomain() );
+        toDirectory = createVFSDirectory( copyObject.getParent().getPublicURIString(), copyObject );
         String newDestination = getNewName( toDirectory, copyObject.getName().toString(), space );
         copyObject = getFileObject( newDestination, space );
       }
@@ -514,11 +510,9 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
         file.getConnection(), space ) );
       // Now get the return value
       if ( file instanceof VFSDirectory ) {
-        return VFSDirectory
-          .create( copyObject.getParent().getPublicURIString(), fileObject, file.getConnection(), file.getDomain() );
+        return createVFSDirectory( copyObject.getParent().getPublicURIString(), fileObject );
       } else {
-        return VFSFile
-          .create( copyObject.getParent().getPublicURIString(), fileObject, file.getConnection(), file.getDomain() );
+        return createVFSFile( copyObject.getParent().getPublicURIString(), fileObject );
       }
     } catch ( FileException | FileSystemException e ) {
       throw new FileException();
@@ -572,7 +566,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
       try ( OutputStream outputStream = fileObject.getContent().getOutputStream(); ) {
         IOUtils.copy( inputStream, outputStream );
         outputStream.flush();
-        return VFSFile.create( destDir.getPath(), fileObject, destDir.getConnection(), destDir.getDomain() );
+        return createVFSFile( destDir.getPath(), fileObject );
       } catch ( IOException e ) {
         return null;
       }
@@ -658,7 +652,7 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
       String newDirectoryPath = fileParent.getPath() + VFSFile.DELIMITER + newDirectoryName; // TODO avoid URI manipulation
       FileObject fileObject = getFileObject( newDirectoryPath, new Variables() );
       fileObject.createFolder();
-      return VFSDirectory.create( parentPath, fileObject, fileParent.getConnection(), fileParent.getDomain() ); // TODO "should" refactor to call VFSFileProvider#add( VFSFile folder, VariableSpace space ) similar as other classes in org.pentaho.di.plugins.fileopensave, could just call #add(..) with dummy VSFFile.getpath=newDirectoryPath
+      return createVFSDirectory( parentPath, fileObject ); // TODO "should" refactor to call VFSFileProvider#add( VFSFile folder, VariableSpace space ) similar as other classes in org.pentaho.di.plugins.fileopensave, could just call #add(..) with dummy VSFFile.getpath=newDirectoryPath
     } catch ( FileException | FileSystemException ignored ) {
       // Ignored
     }
@@ -685,6 +679,26 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
    */
   protected FileObject getFileObject( String vfsPath, VariableSpace space )  throws FileException {
     return kettleVFSService.getFileObject( vfsPath, space ); // TODO maybe just need Supplier instead of whole new class
+  }
+
+  /**
+   * Wrapper around {@link VFSFile#create(String, FileObject, String, String)}.
+   * @param parent
+   * @param fileObject
+   * @return
+   */
+  protected VFSFile createVFSFile( String parent, FileObject fileObject ) {
+    // NOTE: connection and domain are null since they are deprecated
+    return VFSFile.create( parent, fileObject, null, null );
+  }
+
+  /**
+   * Wrapper around {@link VFSDirectory#create(String, FileObject, String, String)}
+   * @return
+   */
+  protected  VFSDirectory createVFSDirectory( String parent, FileObject fileObject ) {
+    // NOTE: connection and domain are null since they are deprecated
+    return VFSDirectory.create( parent, fileObject, null, null );
   }
 
 

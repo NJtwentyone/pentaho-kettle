@@ -24,10 +24,7 @@ package org.pentaho.di.plugins.fileopensave.providers.vfs.model;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
-import org.pentaho.di.connections.vfs.provider.ConnectionFileProvider;
 import org.pentaho.di.core.util.Utils;
-import org.pentaho.di.core.vfs.KettleVFS;
 import org.pentaho.di.plugins.fileopensave.api.providers.BaseEntity;
 import org.pentaho.di.plugins.fileopensave.api.providers.EntityType;
 import org.pentaho.di.plugins.fileopensave.api.providers.File;
@@ -103,6 +100,18 @@ public class VFSFile extends BaseEntity implements File {
 //    }
   }
 
+  /**
+   * Builder method to create an instance of  {@link VFSFile}.
+   * <p/>
+   * NOTE: logic for {@link #setRoot(String)} and {@link #setConnection(String)} is only used in
+   * {@link org.pentaho.di.plugins.fileopensave.dragdrop.ElementDragListener#dragSetData(org.eclipse.swt.dnd.DragSourceEvent)} for the
+   * scenario of "Recent Repository File".
+   * @param parent
+   * @param fileObject
+   * @param connection
+   * @param domain
+   * @return new instance with some populated values.
+   */
   public static VFSFile create( String parent, FileObject fileObject, String connection, String domain ) {
     VFSFile vfsFile = new VFSFile();
     String filename = null;
