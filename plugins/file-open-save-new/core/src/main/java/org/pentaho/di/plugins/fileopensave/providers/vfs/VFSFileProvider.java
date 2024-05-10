@@ -79,9 +79,10 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
   public static final String CONNECTION_SCHEME = ConnectionFileSystem.DOMAIN_ROOT;
 
   /**
-   * Regular expression for connection name
+   * Regular expression for connection name. NOTE: not UI has little no restrictions on connection names
+   * <i>private function</i> {@link org.pentaho.di.vfs.connections.ui.dialog.ConnectionDialog#computeValidateMessage() }
    */
-  protected static final String CONNECTION_NAME_REGEX = "[\\w_-]+";
+  protected static final String CONNECTION_NAME_REGEX = "([^:\\/\\n?]+)";
 
   /**
    * Regular expression for optional folder slash at the end of a path

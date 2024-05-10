@@ -78,6 +78,9 @@ public class VFSFileProviderTest extends TestCase {
 
     assertTrue( testInstance.isConnectionRoot( createTestInstance( "pvfs://123someConnection123/" ) ) );
 
+    // TEST special characters for name
+    assertTrue( testInstance.isConnectionRoot( createTestInstance( "pvfs://###@%&+<>~{}/" ) ) );
+
     // TEST now we have past the root domain
     assertFalse( testInstance.isConnectionRoot( createTestInstance( "pvfs://someConnection/someFolderA" ) ) );
 
