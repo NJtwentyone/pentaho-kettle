@@ -139,10 +139,10 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
     }
     boolean ret = false;
     try {
-      URI uriFilePath = new URI( filePath );
-      String testScheme = uriFilePath.getScheme() + "://";
-      ret = uriFilePath.getScheme() != null && testScheme.matches( ConnectionFileSystem.DOMAIN_ROOT );
-    } catch ( PatternSyntaxException | URISyntaxException e ) {
+      ConnectionUriParser connectionUriParser = new ConnectionUriParser( filePath );
+      String testScheme = connectionUriParser.getScheme() + "://";
+      ret = connectionUriParser.getScheme() != null && testScheme.matches( ConnectionFileSystem.DOMAIN_ROOT );
+    } catch ( PatternSyntaxException e ) {
       // DO NOTHING
     }
     return ret;
