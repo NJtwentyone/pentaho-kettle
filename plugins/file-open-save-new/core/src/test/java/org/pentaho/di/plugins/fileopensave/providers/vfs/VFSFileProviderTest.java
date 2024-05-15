@@ -149,6 +149,8 @@ public class VFSFileProviderTest extends TestCase {
     assertEquals("abc", testInstance.getConnectionName( createTestInstance( "xyz://abc" ) ) );
 
     assertEquals("abc", testInstance.getConnectionName( createTestInstance( "xyz://abc/" ) ) );
+
+    assertEquals("abc", testInstance.getConnectionName( createTestInstance( "xyz://abc/def/ghi/jkl/mno.csv" ) ) );
   }
 
   @Test
