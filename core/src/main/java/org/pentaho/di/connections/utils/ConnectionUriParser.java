@@ -17,6 +17,9 @@
 
 package org.pentaho.di.connections.utils;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Helper class to extract information from the
  * {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME} URI.
@@ -24,4 +27,40 @@ package org.pentaho.di.connections.utils;
  * special characters in the URI.
  */
 public class ConnectionUriParser {
+
+  public static final Pattern CONNECTION_URI_PATTERN = Pattern.compile(  "([\\w]+)://([^/]+)[/]?" ); // TODO re-use other class regex variables
+
+  private final String vfsUri;
+
+  private String scheme;
+
+  private String connectionName;
+
+  public ConnectionUriParser( String vfsUri ) {
+    this.vfsUri = vfsUri;
+    executeMatcher();
+  }
+
+  private Matcher executeMatcher() {
+    Matcher matcher = CONNECTION_URI_PATTERN.matcher( this.vfsUri );
+    if ( matcher.find() ) {
+      int groupCount = matcher.groupCount(); // TODO throw URISytaxException
+      this.scheme = matcher.group( 1 );
+      this.connectionName = matcher.group( 2 );
+//      System.out.println( String.format( "uri:\"%s\""
+//        + "\n\tscheme: \"%s\""
+//        + "\n\tconnectionName: \"%s\"", uri, scheme, connectionName ) );
+//      System.out.println();
+    }
+    return matcher;
+  }
+
+  public String getScheme() {
+    return scheme;
+  }
+
+  public String getConnectionName() {
+    return connectionName;
+  }
+
 }
