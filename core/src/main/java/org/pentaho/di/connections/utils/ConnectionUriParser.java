@@ -28,37 +28,75 @@ import java.util.regex.Pattern;
  */
 public class ConnectionUriParser {
 
-  public static final Pattern CONNECTION_URI_PATTERN = Pattern.compile(  "([\\w]+)://([^/]+)[/]?" ); // TODO re-use other class regex variables
+  /**
+   * Pattern to match a URI with scheme and connection name or first path segment.
+   * <p/> Some Examples:
+   * <ul>
+   *   <li>For PVFS URI: pvfs://connectionName</li>
+   *   <li>For VFS URI: xyz://firstSegment </li>
+   * </ul>
+   * Regex should be encompass {@link org.pentaho.di.connections.vfs.provider.ConnectionFileSystem#DOMAIN_ROOT}
+   */
+  public static final Pattern CONNECTION_URI_WITH_CONNECTION_NAME_PATTERN = Pattern.compile(  "([\\w]+)://([^/]+)[/]?" );
+
+  /**
+   * Pattern to match a URI with just a scheme.
+   * <p/> Some Examples:
+   * <ul>
+   *   <li>For PVFS URI: pvfs://</li>
+   *   <li>For VFS URI: xyz://</li>
+   * </ul>
+   * Regex should be encompass {@link org.pentaho.di.connections.vfs.provider.ConnectionFileSystem#DOMAIN_ROOT}
+   */
+  public static final Pattern CONNECTION_URI_NAME_PATTERN = Pattern.compile(  "([\\w]+)://" );
 
   private final String vfsUri;
 
+  /**
+   * URI scheme or prefix
+   */
   private String scheme;
 
+  /**
+   * URI connection name for PVFS URI or first path segment for VFS URI
+   */
   private String connectionName;
 
   public ConnectionUriParser( String vfsUri ) {
     this.vfsUri = vfsUri;
-    executeMatcher();
+    executeMatchers();
   }
 
-  private Matcher executeMatcher() {
-    Matcher matcher = CONNECTION_URI_PATTERN.matcher( this.vfsUri );
+  /**
+   * Call the matchers to determine the various variables:
+   * <ul>
+   *   <li>{@link #scheme}</li>
+   *   <li>{@link #connectionName}</li>
+   * </ul>
+   */
+  private void executeMatchers() {
+    Matcher matcher = CONNECTION_URI_WITH_CONNECTION_NAME_PATTERN.matcher( this.vfsUri );
     if ( matcher.find() ) {
-      int groupCount = matcher.groupCount(); // TODO throw URISytaxException
-      this.scheme = matcher.group( 1 );
-      this.connectionName = matcher.group( 2 );
-//      System.out.println( String.format( "uri:\"%s\""
-//        + "\n\tscheme: \"%s\""
-//        + "\n\tconnectionName: \"%s\"", uri, scheme, connectionName ) );
-//      System.out.println();
+      int groupCount = matcher.groupCount();
+      this.scheme = matcher.group( 1 ); // index based off regex
+      this.connectionName =  2 <= groupCount ? matcher.group( 2 ) : null; // index based off regex
+    } else if ( connectionName == null && ( matcher = CONNECTION_URI_NAME_PATTERN.matcher( this.vfsUri ) ).find() ) { // try without a first segment/connection name
+      this.scheme = matcher.group( 1 ); // index based off regex
     }
-    return matcher;
   }
 
+  /**
+   * Get the scheme
+   * @return scheme or null otherwise.
+   */
   public String getScheme() {
     return scheme;
   }
 
+  /**
+   * Get the connection name or first segment of URI
+   * @return connection name or null otherwise
+   */
   public String getConnectionName() {
     return connectionName;
   }

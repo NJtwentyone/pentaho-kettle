@@ -18,61 +18,87 @@
 package org.pentaho.di.connections.utils;
 
 import junit.framework.TestCase;
+import org.junit.Test;
 
 public class ConnectionUriParserTest extends TestCase {
 
+  @Test
   public void testConnectionUriParser_Example_URIs() throws Exception {
 
-    String uri0 = "xyz://abc";
+    String uri_01 = "xyz://";
 
-    ConnectionUriParser cup0 = new ConnectionUriParser( uri0 );
-    assertEquals( "xyz", cup0.getScheme() );
-    assertEquals( "abc", cup0.getConnectionName() );
+    ConnectionUriParser cup_01 = new ConnectionUriParser( uri_01 );
+    assertEquals( "xyz", cup_01.getScheme() );
+    assertEquals( null, cup_01.getConnectionName() );
 
-    String uri1 = "xyz://abc/";
+    String uri_02 = "xyz:///";
 
-    ConnectionUriParser cup1 = new ConnectionUriParser( uri1 );
-    assertEquals( "xyz", cup1.getScheme() );
-    assertEquals( "abc", cup1.getConnectionName() );
+    ConnectionUriParser cup_02 = new ConnectionUriParser( uri_02 );
+    assertEquals( "xyz", cup_02.getScheme() );
+    assertEquals( null, cup_02.getConnectionName() );
 
-    String uri2 = "xyz://abc/someDir/somePath/someFile.txt";
+    String uri_3 = "pvfs://";
 
-    ConnectionUriParser cup2 = new ConnectionUriParser( uri2 );
-    assertEquals( "xyz", cup2.getScheme() );
-    assertEquals( "abc", cup2.getConnectionName() );
+    ConnectionUriParser cup_3 = new ConnectionUriParser( uri_3 );
+    assertEquals( "pvfs", cup_3.getScheme() );
+    assertEquals( null, cup_3.getConnectionName() );
 
-    String uri3 = "pvfs://some-ConnectionName_123/";
+    String uri_4 = "pvfs:///";
 
-    ConnectionUriParser cup3 = new ConnectionUriParser( uri3 );
-    assertEquals( "pvfs", cup3.getScheme() );
-    assertEquals( "some-ConnectionName_123", cup3.getConnectionName() );
+    ConnectionUriParser cup_4 = new ConnectionUriParser( uri_4 );
+    assertEquals( "pvfs", cup_4.getScheme() );
+    assertEquals( null, cup_4.getConnectionName() );
 
-    String uri4 = "pvfs://some-ConnectionName_123";
-
-    ConnectionUriParser cup4 = new ConnectionUriParser( uri4 );
-    assertEquals( "pvfs", cup4.getScheme() );
-    assertEquals( "some-ConnectionName_123", cup4.getConnectionName() );
-
-    String uri5 = "pvfs://some-ConnectionName_123/someFolderA/someFolderB/someFolderC/sales_data.csv";
+    String uri5 = "xyz://abc";
 
     ConnectionUriParser cup5 = new ConnectionUriParser( uri5 );
-    assertEquals( "pvfs", cup5.getScheme() );
-    assertEquals( "some-ConnectionName_123", cup5.getConnectionName() );
+    assertEquals( "xyz", cup5.getScheme() );
+    assertEquals( "abc", cup5.getConnectionName() );
 
-    // TEST : can handle special characters, passing connection name as-is per "current" requirements based on connection creation logic
-    String uri6 = "pvfs://Special Character name &#! <> why would you do this/someFolderA/someFolderB/someFolderC/sales_data.csv";
+    String uri6 = "xyz://abc/";
 
     ConnectionUriParser cup6 = new ConnectionUriParser( uri6 );
-    assertEquals( "pvfs", cup6.getScheme() );
-    assertEquals( "Special Character name &#! <> why would you do this", cup6.getConnectionName() );
+    assertEquals( "xyz", cup6.getScheme() );
+    assertEquals( "abc", cup6.getConnectionName() );
+
+    String uri7 = "xyz://abc/someDir/somePath/someFile.txt";
+
+    ConnectionUriParser cup7 = new ConnectionUriParser( uri7 );
+    assertEquals( "xyz", cup7.getScheme() );
+    assertEquals( "abc", cup7.getConnectionName() );
+
+    String uri8 = "pvfs://some-ConnectionName_123/";
+
+    ConnectionUriParser cup8 = new ConnectionUriParser( uri8 );
+    assertEquals( "pvfs", cup8.getScheme() );
+    assertEquals( "some-ConnectionName_123", cup8.getConnectionName() );
+
+    String uri9 = "pvfs://some-ConnectionName_123";
+
+    ConnectionUriParser cup9 = new ConnectionUriParser( uri9 );
+    assertEquals( "pvfs", cup9.getScheme() );
+    assertEquals( "some-ConnectionName_123", cup9.getConnectionName() );
+
+    String uri10 = "pvfs://some-ConnectionName_123/someFolderA/someFolderB/someFolderC/sales_data.csv";
+
+    ConnectionUriParser cup10 = new ConnectionUriParser( uri10 );
+    assertEquals( "pvfs", cup10.getScheme() );
+    assertEquals( "some-ConnectionName_123", cup10.getConnectionName() );
+
+    // TEST : can handle special characters, passing connection name as-is per "current" requirements based on connection creation logic
+    String uri11 = "pvfs://Special Character name &#! <> why would you do this/someFolderA/someFolderB/someFolderC/sales_data.csv";
+
+    ConnectionUriParser cup11 = new ConnectionUriParser( uri11 );
+    assertEquals( "pvfs", cup11.getScheme() );
+    assertEquals( "Special Character name &#! <> why would you do this", cup11.getConnectionName() );
 
 
     // TEST : can handle special characters, passing connection name as-is per "current" requirements based on connection creation logic
-    String uri7 = "pvfs://Special Character name &#! <> why would you do this";
+    String uri12 = "pvfs://Special Character name &#! <> why would you do this";
 
-    ConnectionUriParser cup7 = new ConnectionUriParser( uri7 );
-    assertEquals( "pvfs", cup7.getScheme() );
-    assertEquals( "Special Character name &#! <> why would you do this", cup7.getConnectionName() );
+    ConnectionUriParser cup12 = new ConnectionUriParser( uri12 );
+    assertEquals( "pvfs", cup12.getScheme() );
+    assertEquals( "Special Character name &#! <> why would you do this", cup12.getConnectionName() );
 
   }
 }
