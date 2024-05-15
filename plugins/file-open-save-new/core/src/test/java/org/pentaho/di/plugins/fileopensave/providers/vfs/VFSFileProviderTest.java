@@ -146,11 +146,11 @@ public class VFSFileProviderTest extends TestCase {
 
     assertNull( testInstance.getConnectionName( createTestInstance( "xyz://" ) ) );
 
-    assertEquals("abc", testInstance.getConnectionName( createTestInstance( "xyz://abc" ) ) );
+    assertEquals( "abc", testInstance.getConnectionName( createTestInstance( "xyz://abc" ) ) );
 
-    assertEquals("abc", testInstance.getConnectionName( createTestInstance( "xyz://abc/" ) ) );
+    assertEquals( "abc", testInstance.getConnectionName( createTestInstance( "xyz://abc/" ) ) );
 
-    assertEquals("abc", testInstance.getConnectionName( createTestInstance( "xyz://abc/def/ghi/jkl/mno.csv" ) ) );
+    assertEquals( "abc", testInstance.getConnectionName( createTestInstance( "xyz://abc/def/ghi/jkl/mno.csv" ) ) );
   }
 
   @Test
@@ -167,6 +167,8 @@ public class VFSFileProviderTest extends TestCase {
     assertNull( testInstance.getScheme( createTestInstance( "someGarbage" ) ) );
 
     assertEquals( "xyz", testInstance.getScheme( createTestInstance( "xyz://abc" ) ) );
+
+    assertEquals( "xyz", testInstance.getScheme( createTestInstance( "xyz://abc/def/ghi/jkl/mno.csv" ) ) );
   }
 
   @Test

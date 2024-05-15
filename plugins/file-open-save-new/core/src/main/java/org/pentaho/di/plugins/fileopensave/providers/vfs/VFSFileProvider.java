@@ -29,8 +29,10 @@ import org.apache.commons.vfs2.FileSelectInfo;
 import org.apache.commons.vfs2.FileSelector;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileType;
+import org.eclipse.swt.internal.C;
 import org.pentaho.di.connections.ConnectionDetails;
 import org.pentaho.di.connections.ConnectionProvider;
+import org.pentaho.di.connections.utils.ConnectionUriParser;
 import org.pentaho.di.connections.vfs.VFSConnectionDetails;
 import org.pentaho.di.connections.vfs.VFSConnectionProvider;
 import org.pentaho.di.connections.vfs.VFSRoot;
@@ -602,9 +604,9 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
   protected String getConnectionName( VFSFile vfsFile ) {
     String connectionName = null;
     try {
-      URI uriVFS = new URI( vfsFile.getPath() );
-      connectionName = uriVFS.getAuthority(); // connection name in pvfs://<connectionName> format
-    } catch ( URISyntaxException | NullPointerException e ) {
+      ConnectionUriParser connectionUriParser = new ConnectionUriParser( vfsFile.getPath() );
+      connectionName = connectionUriParser.getConnectionName();
+    } catch ( NullPointerException e ) {
       // DO NOTHING
     }
     return connectionName;
@@ -618,9 +620,9 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
   protected String getScheme( VFSFile vfsFile ) {
     String scheme = null;
     try {
-      URI uriVFS = new URI( vfsFile.getPath() );
-      scheme = uriVFS.getScheme(); // connection name in pvfs://<connectionName> format
-    } catch ( URISyntaxException | NullPointerException e ) {
+      ConnectionUriParser connectionUriParser = new ConnectionUriParser( vfsFile.getPath() );
+      scheme = connectionUriParser.getScheme();
+    } catch ( NullPointerException e ) {
       // DO NOTHING
     }
     return scheme;
