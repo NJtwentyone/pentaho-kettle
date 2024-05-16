@@ -75,28 +75,6 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
   public static final String NAME = "VFS Connections";
   public static final String TYPE = "vfs";
 
-  /**
-   * VFS Connection scheme or prefix
-   */
-  public static final String CONNECTION_SCHEME = ConnectionFileSystem.DOMAIN_ROOT;
-
-  /**
-   * Regular expression for connection name
-   */
-  protected static final String CONNECTION_NAME_REGEX = "[\\w_-]+";
-
-  /**
-   * Regular expression for optional folder slash at the end of a path
-   */
-  protected static final String OPTIONAL_FOLDER_SLASH_REGEX = "[/]?";
-
-  /**
-   * Regular expression for the expected pvfs path that only contains the connection name
-   * ie "pvfs://someConnectionName".
-   */
-  protected static final String CONNECTION_NAME_ROOT_REGEX = CONNECTION_SCHEME
-      + CONNECTION_NAME_REGEX + OPTIONAL_FOLDER_SLASH_REGEX;
-
   protected final Bowl bowl;
   private Map<String, List<VFSFile>> roots = new HashMap<>();
 
@@ -301,8 +279,14 @@ public class VFSFileProvider extends BaseFileProvider<VFSFile> {
    * @return true if <code>file</code>'s path is only at domain, false otherwise.
    */
   protected boolean isConnectionRoot( VFSFile file ) {
-    return file != null && !StringUtils.isEmpty( file.getPath() )
-        && file.getPath().matches( CONNECTION_NAME_ROOT_REGEX );
+    boolean ret = false;
+    if ( file != null && !StringUtils.isEmpty( file.getPath() ) ) {
+      ConnectionUriParser connectionUriParser = new ConnectionUriParser( file.getPath() );
+      ret = Objects.equals( ConnectionFileProvider.SCHEME, connectionUriParser.getScheme() )
+          && !StringUtils.isEmpty( connectionUriParser.getConnectionName() )
+          && StringUtils.isEmpty( connectionUriParser.getPvfsPath() );
+    }
+    return ret;
   }
 
   /**
