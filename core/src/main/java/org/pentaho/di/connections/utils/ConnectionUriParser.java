@@ -23,7 +23,8 @@ import java.util.regex.Pattern;
 /**
  * Helper class to extract information from the
  * {@value org.pentaho.di.connections.vfs.provider.ConnectionFileProvider#SCHEME} URI.
- * This class has limited functionality. Main focus is a temporary substitute for not being able to use directly
+ * This class handles special characters in the connection name section of the URI by simply parsing the connection name
+ * as is.This class has limited functionality. Main focus is a temporary substitute for not being able to use directly
  * {@link java.net.URI} due to special characters in the URI.
  */
 public class ConnectionUriParser {
