@@ -29,11 +29,28 @@ import java.util.regex.Pattern;
 public class ConnectionUriParser {
 
   /**
+   * Pattern to match a PVFS URI with scheme, connection name, and path.
+   * <p/> Some Examples:
+   * <ul>
+   *   <li>For PVFS URI: "pvfs://connectionName/someFolderA/SomeFolderB/someFile.txt"</li>
+   *      <ul>
+   *        <li>scehme: "pvfs"</li>
+   *        <li>connection Name: "connectionName"</li>
+   *        <li>pvfs path: "/someFolderA/SomeFolderB/someFile.txt"</li>
+   *
+   *      </ul>
+   * </ul>
+   * Regex should be encompass {@link org.pentaho.di.connections.vfs.provider.ConnectionFileSystem#DOMAIN_ROOT}
+   */
+  public static final Pattern CONNECTION_URI_WITH_CONNECTION_NAME_PATH_PATTERN
+    = Pattern.compile(  "([\\w]+)://([^/]+)(/.+)" );
+
+  /**
    * Pattern to match a URI with scheme and connection name or first path segment.
    * <p/> Some Examples:
    * <ul>
-   *   <li>For PVFS URI: pvfs://connectionName</li>
-   *   <li>For VFS URI: xyz://firstSegment </li>
+   *   <li>For PVFS URI: "pvfs://connectionName"</li>
+   *   <li>For VFS URI: "xyz://firstSegment"</li>
    * </ul>
    * Regex should be encompass {@link org.pentaho.di.connections.vfs.provider.ConnectionFileSystem#DOMAIN_ROOT}
    */
@@ -44,12 +61,27 @@ public class ConnectionUriParser {
    * Pattern to match a URI with just a scheme.
    * <p/> Some Examples:
    * <ul>
-   *   <li>For PVFS URI: pvfs://</li>
-   *   <li>For VFS URI: xyz://</li>
+   *   <li>For PVFS URI: "pvfs://"</li>
+   *   <li>For VFS URI: "xyz://"</li>
    * </ul>
    * Regex should be encompass {@link org.pentaho.di.connections.vfs.provider.ConnectionFileSystem#DOMAIN_ROOT}
    */
   public static final Pattern CONNECTION_URI_NAME_PATTERN = Pattern.compile(  "([\\w]+)://" );
+
+  /**
+   * {@link #scheme} index for {@link Matcher#group(int)}
+   */
+  private static final int GROUP_INDEX_SCHEME = 1;
+
+  /**
+   * {@link #connectionName} index for {@link Matcher#group(int)}
+   */
+  private static final int GROUP_INDEX_CONNECTION_NAME = 2;
+
+  /**
+   * {@link #pvfsPath} index for {@link Matcher#group(int)}
+   */
+  private static final int GROUP_INDEX_PVFS_PATH = 3;
 
   private final String vfsUri;
 
@@ -62,6 +94,12 @@ public class ConnectionUriParser {
    * URI connection name for PVFS URI or first path segment for VFS URI
    */
   private String connectionName;
+
+  /**
+   * URI path for PVFS URI
+   */
+  private String pvfsPath;
+
 
   public ConnectionUriParser( String vfsUri ) {
     this.vfsUri = vfsUri;
@@ -77,14 +115,20 @@ public class ConnectionUriParser {
    */
   private void executeMatchers() {
     try {
-      Matcher matcher = CONNECTION_URI_WITH_CONNECTION_NAME_PATTERN.matcher( this.vfsUri );
-      if ( matcher.find() ) {
+      Matcher matcher;
+      if ( ( matcher = CONNECTION_URI_WITH_CONNECTION_NAME_PATH_PATTERN.matcher( this.vfsUri ) ).find() ) {
         int groupCount = matcher.groupCount();
-        this.scheme = matcher.group( 1 ); // index based off regex
-        this.connectionName = 2 <= groupCount ? matcher.group( 2 ) : null; // index based off regex
-      } else if ( connectionName == null && ( matcher =
-        CONNECTION_URI_NAME_PATTERN.matcher( this.vfsUri ) ).find() ) { // try without a first segment/connection name
-        this.scheme = matcher.group( 1 ); // index based off regex
+        this.scheme = matcher.group( GROUP_INDEX_SCHEME );
+        this.connectionName = GROUP_INDEX_CONNECTION_NAME <= groupCount
+            ? matcher.group( GROUP_INDEX_CONNECTION_NAME ) : null;
+        this.pvfsPath = GROUP_INDEX_PVFS_PATH  <= groupCount ? matcher.group( GROUP_INDEX_PVFS_PATH  ) : null;
+      } else if ( ( matcher = CONNECTION_URI_WITH_CONNECTION_NAME_PATTERN.matcher( this.vfsUri ) ).find() ) {
+        int groupCount = matcher.groupCount();
+        this.scheme = matcher.group( GROUP_INDEX_SCHEME );
+        this.connectionName = GROUP_INDEX_CONNECTION_NAME <= groupCount
+            ? matcher.group( GROUP_INDEX_CONNECTION_NAME ) : null;
+      } else if ( connectionName == null && ( matcher = CONNECTION_URI_NAME_PATTERN.matcher( this.vfsUri ) ).find() ) {
+        this.scheme = matcher.group( GROUP_INDEX_SCHEME );
       }
     } catch ( NullPointerException e ) {
       // do nothing
@@ -105,6 +149,14 @@ public class ConnectionUriParser {
    */
   public String getConnectionName() {
     return connectionName;
+  }
+
+  /**
+   * Get path or PVFS URI, does not include the {@link #connectionName}
+   * @return path or null otherwise
+   */
+  public String getPvfsPath() {
+    return pvfsPath;
   }
 
 }
