@@ -17,6 +17,7 @@
 
 package org.pentaho.di.connections.utils;
 
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,7 +44,7 @@ public class ConnectionUriParser {
    * </ul>
    * Regex should be encompass {@link org.pentaho.di.connections.vfs.provider.ConnectionFileSystem#DOMAIN_ROOT}
    */
-  public static final Pattern CONNECTION_URI_WITH_CONNECTION_NAME_PATH_PATTERN
+  public static final Pattern CONNECTION_URI_WITH_CONNECTION_NAME_AND_PATH_PATTERN
     = Pattern.compile(  "(\\w+)://([^/]+)(/.+)" );
 
   /**
@@ -112,28 +113,55 @@ public class ConnectionUriParser {
    * <ul>
    *   <li>{@link #scheme}</li>
    *   <li>{@link #connectionName}</li>
+   *   <li>{@link #pvfsPath}</li>
    * </ul>
    */
   private void executeMatchers() {
     try {
-      Matcher matcher;
-      if ( ( matcher = CONNECTION_URI_WITH_CONNECTION_NAME_PATH_PATTERN.matcher( this.vfsUri ) ).find() ) {
-        int groupCount = matcher.groupCount();
-        this.scheme = matcher.group( GROUP_INDEX_SCHEME );
-        this.connectionName = GROUP_INDEX_CONNECTION_NAME <= groupCount
-            ? matcher.group( GROUP_INDEX_CONNECTION_NAME ) : null;
-        this.pvfsPath = GROUP_INDEX_PVFS_PATH  <= groupCount ? matcher.group( GROUP_INDEX_PVFS_PATH  ) : null;
-      } else if ( ( matcher = CONNECTION_URI_WITH_CONNECTION_NAME_PATTERN.matcher( this.vfsUri ) ).find() ) {
-        int groupCount = matcher.groupCount();
-        this.scheme = matcher.group( GROUP_INDEX_SCHEME );
-        this.connectionName = GROUP_INDEX_CONNECTION_NAME <= groupCount
-            ? matcher.group( GROUP_INDEX_CONNECTION_NAME ) : null;
-      } else if ( connectionName == null && ( matcher = CONNECTION_URI_NAME_PATTERN.matcher( this.vfsUri ) ).find() ) {
-        this.scheme = matcher.group( GROUP_INDEX_SCHEME );
+      // order of precedence for matchers
+      Matcher[] matchers = new Matcher[] {
+        CONNECTION_URI_WITH_CONNECTION_NAME_AND_PATH_PATTERN.matcher( this.vfsUri ),
+        CONNECTION_URI_WITH_CONNECTION_NAME_PATTERN.matcher( this.vfsUri ),
+        CONNECTION_URI_NAME_PATTERN.matcher( this.vfsUri )
+      };
+
+      Matcher matcher = Arrays.stream( matchers ).filter( Matcher::find ).findFirst().orElse( null );
+
+      if ( matcher != null ) {
+        setVariables( matcher );
       }
+
     } catch ( NullPointerException e ) {
       // do nothing
     }
+  }
+
+  /**
+   * sets the variables based on the <code>matcher</code>:
+   * <p/>
+   * Variables to set, if matched:
+   * <ul>
+   *   <li>{@link #scheme}</li>
+   *   <li>{@link #connectionName}</li>
+   *   <li>{@link #pvfsPath}</li>
+   * </ul>
+   */
+  private void setVariables( Matcher matcher ) {
+    this.scheme = getGroup( matcher, GROUP_INDEX_SCHEME, null );
+    this.connectionName = getGroup( matcher, GROUP_INDEX_CONNECTION_NAME, null );
+    this.pvfsPath = getGroup( matcher, GROUP_INDEX_PVFS_PATH, null );
+  }
+
+  /**
+   * Wrapper around {@link Matcher#group(String)}. If <code>index</code> is out of bounds,
+   * then <code>defaultValue</code> will be returned.
+   * @param matcher
+   * @param index group index see {@link Matcher#group(String)}
+   * @param defaultValue
+   * @return value from {@link Matcher#group(String)}, otherwise <code>defaultValue</code>
+   */
+  private String getGroup( Matcher matcher, int index, String defaultValue ) {
+    return index <= matcher.groupCount() ? matcher.group( index ) : defaultValue;
   }
 
   /**
