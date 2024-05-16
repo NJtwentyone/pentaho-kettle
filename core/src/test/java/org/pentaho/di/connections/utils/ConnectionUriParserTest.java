@@ -22,6 +22,12 @@ import org.junit.Test;
 
 public class ConnectionUriParserTest extends TestCase {
 
+  /**
+   * Full set of special characters the connection name can be.
+   * Only excluding the character '/' which is a file path deliminator.
+   */
+  public static final String SPECIAL_CHARACTERS_FULL_TEST_SET = "!\"#$%&\'()*+,-.0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+
   @Test
   public void testConnectionUriParser_Negative_Example_URIs() throws Exception {
 
@@ -43,114 +49,82 @@ public class ConnectionUriParserTest extends TestCase {
     assertNullValues( new ConnectionUriParser(  "T:\\Users\\RandomSUser\\Documents\\someWindowsFile" ) );
 
     assertNullValues( new ConnectionUriParser(  "//home/randomUser/randomFile.rpt" ) ); // Pentaho repository
+
   }
 
   @Test
   public void testConnectionUriParser_Example_URIs() throws Exception {
 
     String uri_01 = "xyz://";
-
-    ConnectionUriParser cup_01 = new ConnectionUriParser( uri_01 );
-    assertEquals( "xyz", cup_01.getScheme() );
-    assertEquals( null, cup_01.getConnectionName() );
-    assertEquals( null, cup_01.getPvfsPath() );
+    assertEquals( "xyz", new ConnectionUriParser( uri_01 ) );
 
     String uri_02 = "xyz:///";
+    assertEquals( "xyz", new ConnectionUriParser( uri_02 ) );
 
-    ConnectionUriParser cup_02 = new ConnectionUriParser( uri_02 );
-    assertEquals( "xyz", cup_02.getScheme() );
-    assertEquals( null, cup_02.getConnectionName() );
-    assertEquals( null, cup_02.getPvfsPath() );
+    String uri_03 = "pvfs://";
+    assertEquals( "pvfs", new ConnectionUriParser( uri_03 ));
 
-    String uri_3 = "pvfs://";
+    String uri_04 = "pvfs:///";
+    assertEquals( "pvfs", new ConnectionUriParser( uri_04 ) );
 
-    ConnectionUriParser cup_3 = new ConnectionUriParser( uri_3 );
-    assertEquals( "pvfs", cup_3.getScheme() );
-    assertEquals( null, cup_3.getConnectionName() );
-    assertEquals( null, cup_3.getPvfsPath() );
+    String uri_05 = "xyz://abc";
+    assertEquals( "xyz", "abc", new ConnectionUriParser( uri_05 ) );
 
-    String uri_4 = "pvfs:///";
+    String uri_06 = "xyz://abc/";
+    assertEquals( "xyz", "abc", new ConnectionUriParser( uri_06 ) );
 
-    ConnectionUriParser cup_4 = new ConnectionUriParser( uri_4 );
-    assertEquals( "pvfs", cup_4.getScheme() );
-    assertEquals( null, cup_4.getConnectionName() );
-    assertEquals( null, cup_4.getPvfsPath() );
+    String uri_07 = "xyz://abc/someDir/somePath/someFile.txt";
+    assertEquals( "xyz", "abc", "/someDir/somePath/someFile.txt", new ConnectionUriParser( uri_07 ) );
 
-    String uri5 = "xyz://abc";
+    String uri_08 = "pvfs://some-ConnectionName_123/";
+    assertEquals( "pvfs", "some-ConnectionName_123", new ConnectionUriParser(  uri_08 ) );
 
-    ConnectionUriParser cup5 = new ConnectionUriParser( uri5 );
-    assertEquals( "xyz", cup5.getScheme() );
-    assertEquals( "abc", cup5.getConnectionName() );
-    assertEquals( null, cup5.getPvfsPath() );
+    String uri_09 = "pvfs://some-ConnectionName_123";
+    assertEquals( "pvfs", "some-ConnectionName_123", new ConnectionUriParser(  uri_09 ) );
 
-    String uri6 = "xyz://abc/";
-
-    ConnectionUriParser cup6 = new ConnectionUriParser( uri6 );
-    assertEquals( "xyz", cup6.getScheme() );
-    assertEquals( "abc", cup6.getConnectionName() );
-    assertEquals( null, cup6.getPvfsPath() );
-
-    String uri7 = "xyz://abc/someDir/somePath/someFile.txt";
-
-    ConnectionUriParser cup7 = new ConnectionUriParser( uri7 );
-    assertEquals( "xyz", cup7.getScheme() );
-    assertEquals( "abc", cup7.getConnectionName() );
-    assertEquals( "/someDir/somePath/someFile.txt", cup7.getPvfsPath() );
-
-    String uri8 = "pvfs://some-ConnectionName_123/";
-
-    ConnectionUriParser cup8 = new ConnectionUriParser( uri8 );
-    assertEquals( "pvfs", cup8.getScheme() );
-    assertEquals( "some-ConnectionName_123", cup8.getConnectionName() );
-    assertEquals( null, cup8.getPvfsPath() );
-
-    String uri9 = "pvfs://some-ConnectionName_123";
-
-    ConnectionUriParser cup9 = new ConnectionUriParser( uri9 );
-    assertEquals( "pvfs", cup9.getScheme() );
-    assertEquals( "some-ConnectionName_123", cup9.getConnectionName() );
-    assertEquals( null, cup9.getPvfsPath() );
-
-    String uri10 = "pvfs://some-ConnectionName_123/someFolderA/someFolderB/someFolderC/sales_data.csv";
-
-    ConnectionUriParser cup10 = new ConnectionUriParser( uri10 );
-    assertEquals( "pvfs", cup10.getScheme() );
-    assertEquals( "some-ConnectionName_123", cup10.getConnectionName() );
-    assertEquals( "/someFolderA/someFolderB/someFolderC/sales_data.csv", cup10.getPvfsPath() );
+    String uri_10 = "pvfs://some-ConnectionName_123/someFolderA/someFolderB/someFolderC/sales_data.csv";
+    assertEquals( "pvfs",
+        "some-ConnectionName_123",
+        "/someFolderA/someFolderB/someFolderC/sales_data.csv",
+        new ConnectionUriParser(  uri_10 ) );
 
     // TEST : can handle special characters, passing connection name as-is per "current" requirements based on connection creation logic
-    String uri11 = "pvfs://Special Character name &#! <> why would you do this/someFolderA/someFolderB/someFolderC/sales_data.csv";
-
-    ConnectionUriParser cup11 = new ConnectionUriParser( uri11 );
-    assertEquals( "pvfs", cup11.getScheme() );
-    assertEquals( "Special Character name &#! <> why would you do this", cup11.getConnectionName() );
-    assertEquals( "/someFolderA/someFolderB/someFolderC/sales_data.csv", cup11.getPvfsPath() );
+    String uri_11 = "pvfs://Special Character name &#! <> why would you do this/someFolderA/someFolderB/someFolderC/sales_data.csv";
+    assertEquals( "pvfs",
+      "Special Character name &#! <> why would you do this",
+      "/someFolderA/someFolderB/someFolderC/sales_data.csv",
+      new ConnectionUriParser(  uri_11 ) );
 
 
     // TEST : can handle special characters, passing connection name as-is per "current" requirements based on connection creation logic
-    String uri12 = "pvfs://Special Character name &#! <> why would you do this";
+    String uri_12 = "pvfs://Special Character name &#! <> why would you do this";
+    assertEquals( "pvfs",
+      "Special Character name &#! <> why would you do this",
+      new ConnectionUriParser(  uri_12 ) );
 
-    ConnectionUriParser cup12 = new ConnectionUriParser( uri12 );
-    assertEquals( "pvfs", cup12.getScheme() );
-    assertEquals( "Special Character name &#! <> why would you do this", cup12.getConnectionName() );
-    assertEquals( null, cup12.getPvfsPath() );
+    String uri_13 = "pvfs://Special Character name &#! <> why would you do this/";
+    assertEquals( "pvfs",
+      "Special Character name &#! <> why would you do this",
+      new ConnectionUriParser(  uri_13 ) );
 
-    // TEST robust example of special characters, only excluding '/'
-    String specialCharacters = "!\"#$%&\'()*+,-.0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-    String uri13 = "pvfs://" + specialCharacters;
+    // TEST robust example of special characters
+    String uri_14 = "pvfs://" + SPECIAL_CHARACTERS_FULL_TEST_SET;
+    assertEquals( "pvfs",
+      SPECIAL_CHARACTERS_FULL_TEST_SET,
+      new ConnectionUriParser(  uri_14 ) );
 
-    ConnectionUriParser cup13 = new ConnectionUriParser( uri13 );
-    assertEquals( "pvfs", cup13.getScheme() );
-    assertEquals( specialCharacters, cup13.getConnectionName() );
-    assertEquals( null, cup13.getPvfsPath() );
+    String uri_15 = "pvfs://" + SPECIAL_CHARACTERS_FULL_TEST_SET + "/";
+    assertEquals( "pvfs",
+      SPECIAL_CHARACTERS_FULL_TEST_SET,
+      new ConnectionUriParser(  uri_15 ) );
 
     String absolutePVFSPath = "/someFolderA/someFolderB/someFolderC/sales_data.csv";
-    String uri14 = "pvfs://" + specialCharacters + absolutePVFSPath;
 
-    ConnectionUriParser cup14 = new ConnectionUriParser( uri14 );
-    assertEquals( "pvfs", cup14.getScheme() );
-    assertEquals( specialCharacters, cup14.getConnectionName() );
-    assertEquals( absolutePVFSPath, cup14.getPvfsPath() );
+    String uri_16 = "pvfs://" + SPECIAL_CHARACTERS_FULL_TEST_SET + absolutePVFSPath;
+    assertEquals( "pvfs",
+      SPECIAL_CHARACTERS_FULL_TEST_SET,
+      absolutePVFSPath,
+      new ConnectionUriParser(  uri_16 ) );
 
   }
 
@@ -161,8 +135,22 @@ public class ConnectionUriParserTest extends TestCase {
     assertEquals( expectedPvfsPath, actualConnectionUriParser.getPvfsPath() );
   }
 
+  protected void assertEquals( String expectedScheme, String expectedConnectionName,
+                               ConnectionUriParser actualConnectionUriParser ) {
+    assertEquals( expectedScheme, actualConnectionUriParser.getScheme() );
+    assertEquals( expectedConnectionName, actualConnectionUriParser.getConnectionName() );
+    assertEquals( null, actualConnectionUriParser.getPvfsPath() );
+  }
+
+  protected void assertEquals( String expectedScheme,
+                               ConnectionUriParser actualConnectionUriParser ) {
+    assertEquals( expectedScheme, actualConnectionUriParser.getScheme() );
+    assertEquals( null, actualConnectionUriParser.getConnectionName() );
+    assertEquals( null, actualConnectionUriParser.getPvfsPath() );
+  }
+
   protected void assertNullValues( ConnectionUriParser actualConnectionUriParser ) {
-    assertEquals( null, null, null, actualConnectionUriParser);
+    assertEquals( null, null, null, actualConnectionUriParser );
   }
 
 }
