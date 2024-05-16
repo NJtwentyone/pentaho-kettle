@@ -25,53 +25,24 @@ public class ConnectionUriParserTest extends TestCase {
   @Test
   public void testConnectionUriParser_Negative_Example_URIs() throws Exception {
 
-    String uri_bad_01 = null;
+    assertNullValues( new ConnectionUriParser( null ) );
 
-    ConnectionUriParser cup_bad_01 = new ConnectionUriParser( uri_bad_01 );
-    assertEquals( null, cup_bad_01.getScheme() );
-    assertEquals( null, cup_bad_01.getConnectionName() );
+    assertNullValues( new ConnectionUriParser( "" ) );
 
-    String uri_bad_02 = "";
+    assertNullValues( new ConnectionUriParser( "      " ) );
 
-    ConnectionUriParser cup_bad_02 = new ConnectionUriParser( uri_bad_02 );
-    assertEquals( null, cup_bad_02.getScheme() );
-    assertEquals( null, cup_bad_02.getConnectionName() );
-
-
-    String uri_bad_03 = "      ";
-
-    ConnectionUriParser cup_bad_03 = new ConnectionUriParser( uri_bad_03 );
-    assertEquals( null, cup_bad_03.getScheme() );
-    assertEquals( null, cup_bad_03.getConnectionName() );
-
-    String uri_bad_04 = "someGarbage";
-
-    ConnectionUriParser cup_bad_04 = new ConnectionUriParser( uri_bad_04 );
-    assertEquals( null, cup_bad_04.getScheme() );
-    assertEquals( null, cup_bad_04.getConnectionName() );
+    assertNullValues( new ConnectionUriParser( "someGarbage" ) );
 
   }
 
   @Test
   public void testConnectionUriParser_Negative_Example_Non_URIs() throws Exception {
 
-    String uri_bad_05 =  "/someUser/someUnixFile";
+    assertNullValues( new ConnectionUriParser( "/someUser/someUnixFile" ) );
 
-    ConnectionUriParser cup_bad_05 = new ConnectionUriParser( uri_bad_05 );
-    assertEquals( null, cup_bad_05.getScheme() );
-    assertEquals( null, cup_bad_05.getConnectionName() );
+    assertNullValues( new ConnectionUriParser(  "T:\\Users\\RandomSUser\\Documents\\someWindowsFile" ) );
 
-    String uri_bad_06 =  "T:\\Users\\RandomSUser\\Documents\\someWindowsFile";
-
-    ConnectionUriParser cup_bad_06 = new ConnectionUriParser( uri_bad_06 );
-    assertEquals( null, cup_bad_06.getScheme() );
-    assertEquals( null, cup_bad_06.getConnectionName() );
-
-    String uri_bad_07 =  "//home/randomUser/randomFile.rpt"; // Pentaho repository
-
-    ConnectionUriParser cup_bad_07 = new ConnectionUriParser( uri_bad_07 );
-    assertEquals( null, cup_bad_07.getScheme() );
-    assertEquals( null, cup_bad_07.getConnectionName() );
+    assertNullValues( new ConnectionUriParser(  "//home/randomUser/randomFile.rpt" ) ); // Pentaho repository
   }
 
   @Test
@@ -182,4 +153,16 @@ public class ConnectionUriParserTest extends TestCase {
     assertEquals( absolutePVFSPath, cup14.getPvfsPath() );
 
   }
+
+  protected void assertEquals( String expectedScheme, String expectedConnectionName, String expectedPvfsPath,
+                              ConnectionUriParser actualConnectionUriParser ) {
+    assertEquals( expectedScheme, actualConnectionUriParser.getScheme() );
+    assertEquals( expectedConnectionName, actualConnectionUriParser.getConnectionName() );
+    assertEquals( expectedPvfsPath, actualConnectionUriParser.getPvfsPath() );
+  }
+
+  protected void assertNullValues( ConnectionUriParser actualConnectionUriParser ) {
+    assertEquals( null, null, null, actualConnectionUriParser);
+  }
+
 }
