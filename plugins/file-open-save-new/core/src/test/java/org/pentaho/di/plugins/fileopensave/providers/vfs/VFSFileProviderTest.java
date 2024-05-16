@@ -78,6 +78,10 @@ public class VFSFileProviderTest extends TestCase {
 
     assertTrue( testInstance.isConnectionRoot( createTestInstance( "pvfs://123someConnection123/" ) ) );
 
+    assertTrue( testInstance.isConnectionRoot( createTestInstance( "pvfs://Special Character name &#! <>/" ) ) );
+
+    assertTrue( testInstance.isConnectionRoot( createTestInstance( "pvfs://Special Character name &#! <>" ) ) );
+
     // TEST now we have past the root domain
     assertFalse( testInstance.isConnectionRoot( createTestInstance( "pvfs://someConnection/someFolderA" ) ) );
 
@@ -86,6 +90,9 @@ public class VFSFileProviderTest extends TestCase {
 
     assertFalse( testInstance.isConnectionRoot(
         createTestInstance( "pvfs://someConnection/someFolderA/directory2/randomFileC.txt" ) ) );
+
+    assertFalse( testInstance.isConnectionRoot(
+      createTestInstance( "pvfs://Special Character name &#! <>/someFolderA/directory2/randomFileC.txt" ) ) );
   }
 
   public void testHasBuckets() {
@@ -127,6 +134,8 @@ public class VFSFileProviderTest extends TestCase {
     assertFalse( testInstance.isSupported( "//home/randomUser/randomFile.rpt" ) );
 
     assertTrue( testInstance.isSupported( "pvfs://someConnection/someFilePath" ) );
+
+    assertTrue( testInstance.isSupported( "pvfs://Special Character name &#! <>/someFilePath" ) );
   }
 
   @Test
@@ -151,6 +160,9 @@ public class VFSFileProviderTest extends TestCase {
     assertEquals( "abc", testInstance.getConnectionName( createTestInstance( "xyz://abc/" ) ) );
 
     assertEquals( "abc", testInstance.getConnectionName( createTestInstance( "xyz://abc/def/ghi/jkl/mno.csv" ) ) );
+
+    assertEquals( "Special Character name &#! <>", testInstance.getConnectionName(
+        createTestInstance( "xyz://Special Character name &#! <>/def/ghi/jkl/mno.csv" ) ) );
   }
 
   @Test
@@ -168,7 +180,11 @@ public class VFSFileProviderTest extends TestCase {
 
     assertEquals( "xyz", testInstance.getScheme( createTestInstance( "xyz://abc" ) ) );
 
-    assertEquals( "xyz", testInstance.getScheme( createTestInstance( "xyz://abc/def/ghi/jkl/mno.csv" ) ) );
+    assertEquals( "xyz", testInstance.getScheme(
+        createTestInstance( "xyz://abc/def/ghi/jkl/mno.csv" ) ) );
+
+    assertEquals( "xyz", testInstance.getScheme(
+        createTestInstance( "xyz://Special Character name &#! <>/def/ghi/jkl/mno.csv" ) ) );
   }
 
   @Test
@@ -203,6 +219,14 @@ public class VFSFileProviderTest extends TestCase {
     assertTrue( testInstance.isSame( vfsFile_ABC_SomeDir, vfsFile_ABC_SomeDir ) );
 
     assertTrue( testInstance.isSame( vfsFile_ABC_SomeDir, vfsFile_ABC_FolderA ) );
+
+    File vfsFile_SpecialCharacters_Path1 = createTestInstance( "xyz://Special Character name &#! <>/Path1/Path2" );
+
+    File vfsFile_SpecialCharacters_DirectoryA = createTestInstance( "xyz://Special Character name &#! <>/DirectoryA/DirectoryB/DirectoryC" );
+
+    assertTrue( testInstance.isSame( vfsFile_SpecialCharacters_Path1, vfsFile_SpecialCharacters_DirectoryA ) );
+
+    assertFalse( testInstance.isSame( vfsFile_SpecialCharacters_Path1, vfsFile_ABC_SomeDir ) );
   }
 
   protected VFSFile createTestInstance( String path ) {
