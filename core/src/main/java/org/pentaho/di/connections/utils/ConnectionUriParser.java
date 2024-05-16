@@ -37,7 +37,8 @@ public class ConnectionUriParser {
    * </ul>
    * Regex should be encompass {@link org.pentaho.di.connections.vfs.provider.ConnectionFileSystem#DOMAIN_ROOT}
    */
-  public static final Pattern CONNECTION_URI_WITH_CONNECTION_NAME_PATTERN = Pattern.compile(  "([\\w]+)://([^/]+)[/]?" );
+  public static final Pattern CONNECTION_URI_WITH_CONNECTION_NAME_PATTERN
+      = Pattern.compile(  "([\\w]+)://([^/]+)[/]?" );
 
   /**
    * Pattern to match a URI with just a scheme.
@@ -75,13 +76,18 @@ public class ConnectionUriParser {
    * </ul>
    */
   private void executeMatchers() {
-    Matcher matcher = CONNECTION_URI_WITH_CONNECTION_NAME_PATTERN.matcher( this.vfsUri );
-    if ( matcher.find() ) {
-      int groupCount = matcher.groupCount();
-      this.scheme = matcher.group( 1 ); // index based off regex
-      this.connectionName =  2 <= groupCount ? matcher.group( 2 ) : null; // index based off regex
-    } else if ( connectionName == null && ( matcher = CONNECTION_URI_NAME_PATTERN.matcher( this.vfsUri ) ).find() ) { // try without a first segment/connection name
-      this.scheme = matcher.group( 1 ); // index based off regex
+    try {
+      Matcher matcher = CONNECTION_URI_WITH_CONNECTION_NAME_PATTERN.matcher( this.vfsUri );
+      if ( matcher.find() ) {
+        int groupCount = matcher.groupCount();
+        this.scheme = matcher.group( 1 ); // index based off regex
+        this.connectionName = 2 <= groupCount ? matcher.group( 2 ) : null; // index based off regex
+      } else if ( connectionName == null && ( matcher =
+        CONNECTION_URI_NAME_PATTERN.matcher( this.vfsUri ) ).find() ) { // try without a first segment/connection name
+        this.scheme = matcher.group( 1 ); // index based off regex
+      }
+    } catch ( NullPointerException e ) {
+      // do nothing
     }
   }
 

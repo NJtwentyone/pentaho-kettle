@@ -23,6 +23,58 @@ import org.junit.Test;
 public class ConnectionUriParserTest extends TestCase {
 
   @Test
+  public void testConnectionUriParser_Negative_Example_URIs() throws Exception {
+
+    String uri_bad_01 = null;
+
+    ConnectionUriParser cup_bad_01 = new ConnectionUriParser( uri_bad_01 );
+    assertEquals( null, cup_bad_01.getScheme() );
+    assertEquals( null, cup_bad_01.getConnectionName() );
+
+    String uri_bad_02 = "";
+
+    ConnectionUriParser cup_bad_02 = new ConnectionUriParser( uri_bad_02 );
+    assertEquals( null, cup_bad_02.getScheme() );
+    assertEquals( null, cup_bad_02.getConnectionName() );
+
+
+    String uri_bad_03 = "      ";
+
+    ConnectionUriParser cup_bad_03 = new ConnectionUriParser( uri_bad_03 );
+    assertEquals( null, cup_bad_03.getScheme() );
+    assertEquals( null, cup_bad_03.getConnectionName() );
+
+    String uri_bad_04 = "someGarbage";
+
+    ConnectionUriParser cup_bad_04 = new ConnectionUriParser( uri_bad_04 );
+    assertEquals( null, cup_bad_04.getScheme() );
+    assertEquals( null, cup_bad_04.getConnectionName() );
+
+  }
+
+  @Test
+  public void testConnectionUriParser_Negative_Example_Non_URIs() throws Exception {
+
+    String uri_bad_05 =  "/someUser/someUnixFile";
+
+    ConnectionUriParser cup_bad_05 = new ConnectionUriParser( uri_bad_05 );
+    assertEquals( null, cup_bad_05.getScheme() );
+    assertEquals( null, cup_bad_05.getConnectionName() );
+
+    String uri_bad_06 =  "T:\\Users\\RandomSUser\\Documents\\someWindowsFile";
+
+    ConnectionUriParser cup_bad_06 = new ConnectionUriParser( uri_bad_06 );
+    assertEquals( null, cup_bad_06.getScheme() );
+    assertEquals( null, cup_bad_06.getConnectionName() );
+
+    String uri_bad_07 =  "//home/randomUser/randomFile.rpt"; // Pentaho repository
+
+    ConnectionUriParser cup_bad_07 = new ConnectionUriParser( uri_bad_07 );
+    assertEquals( null, cup_bad_07.getScheme() );
+    assertEquals( null, cup_bad_07.getConnectionName() );
+  }
+
+  @Test
   public void testConnectionUriParser_Example_URIs() throws Exception {
 
     String uri_01 = "xyz://";
@@ -99,6 +151,14 @@ public class ConnectionUriParserTest extends TestCase {
     ConnectionUriParser cup12 = new ConnectionUriParser( uri12 );
     assertEquals( "pvfs", cup12.getScheme() );
     assertEquals( "Special Character name &#! <> why would you do this", cup12.getConnectionName() );
+
+    // TEST robust example of special characters, only excluding '/'
+    String specialCharacters = "!\"#$%&\'()*+,-.0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+    String uri13 = "pvfs://" + specialCharacters;
+
+    ConnectionUriParser cup13 = new ConnectionUriParser( uri13 );
+    assertEquals( "pvfs", cup13.getScheme() );
+    assertEquals( specialCharacters, cup13.getConnectionName() );
 
   }
 }
