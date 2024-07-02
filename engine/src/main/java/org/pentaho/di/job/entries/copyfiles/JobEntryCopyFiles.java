@@ -232,14 +232,17 @@ public class JobEntryCopyFiles extends JobEntryBase implements Cloneable, JobEnt
 
   protected void saveSource( StringBuilder retval, String source ) {
     String namedCluster = configurationMappings.get( source );
-
+    // FIXME add output from #saveURL
+    //String saveURL = saveURL( source, namedCluster, getMetaStore(), configurationMappings  ) ;
     retval.append( "          " ).append( XMLHandler.addTagValue( SOURCE_FILE_FOLDER, KettleVFS.cleanseFilename( source ) ) );
     retval.append( "          " ).append( XMLHandler.addTagValue( SOURCE_CONFIGURATION_NAME, namedCluster ) );
   }
 
   protected void saveDestination( StringBuilder retval, String destination ) {
     String namedCluster = configurationMappings.get( destination );
-    retval.append( "          " ).append( XMLHandler.addTagValue( DESTINATION_FILE_FOLDER, KettleVFS.cleanseFilename( destination ) ) );
+    // TODO move this logic to all saveXYZ()
+    String saveURL = saveURL( destination, namedCluster, getMetaStore(), configurationMappings  ) ;
+    retval.append( "          " ).append( XMLHandler.addTagValue( DESTINATION_FILE_FOLDER, saveURL ) );
     retval.append( "          " ).append( XMLHandler.addTagValue( DESTINATION_CONFIGURATION_NAME, namedCluster ) );
   }
 
@@ -258,6 +261,10 @@ public class JobEntryCopyFiles extends JobEntryBase implements Cloneable, JobEnt
   protected void saveSourceRep( Repository rep, ObjectId id_job, ObjectId id_jobentry, int i, String value )
     throws KettleException {
     String namedCluster = configurationMappings.get( value );
+    /**
+     * TODO investigate why repository locations don't get the same treatment for URL passwords as before - KettleVFS.cleanseFilename( source )
+     * https://github.com/pentaho/pentaho-kettle/blob/97717427fdeb8100d05aa4cea9acd75894c85337/engine/src/main/java/org/pentaho/di/job/entries/copyfiles/JobEntryCopyFiles.java#L236
+     */
     rep.saveJobEntryAttribute( id_job, getObjectId(), i, SOURCE_FILE_FOLDER, value );
     rep.saveJobEntryAttribute( id_job, id_jobentry, i, SOURCE_CONFIGURATION_NAME, namedCluster );
   }
@@ -265,6 +272,10 @@ public class JobEntryCopyFiles extends JobEntryBase implements Cloneable, JobEnt
   protected void saveDestinationRep( Repository rep, ObjectId id_job, ObjectId id_jobentry, int i, String value )
     throws KettleException {
     String namedCluster = configurationMappings.get( value );
+    /**
+     * TODO investigate why repository locations don't get the same treatment for URL passwords as before - KettleVFS.cleanseFilename( destination )
+     * https://github.com/pentaho/pentaho-kettle/blob/97717427fdeb8100d05aa4cea9acd75894c85337/engine/src/main/java/org/pentaho/di/job/entries/copyfiles/JobEntryCopyFiles.java#L242
+     */
     rep.saveJobEntryAttribute( id_job, getObjectId(), i, DESTINATION_FILE_FOLDER, value );
     rep.saveJobEntryAttribute( id_job, id_jobentry, i, DESTINATION_CONFIGURATION_NAME, namedCluster );
   }
@@ -1155,11 +1166,32 @@ public class JobEntryCopyFiles extends JobEntryBase implements Cloneable, JobEnt
     return true;
   }
 
+  /**
+   * Unmarshalling job entry xml fields ( {@link #SOURCE_FILE_FOLDER } and {@link #DESTINATION_FILE_FOLDER} )
+   * to the actual URL.
+   * @param url
+   * @param ncName
+   * @param metastore
+   * @param mappings
+   * @return
+   */
   public String loadURL( String url, String ncName, IMetaStore metastore, Map<String, String> mappings ) {
     if ( !Utils.isEmpty( ncName ) && !Utils.isEmpty( url ) ) {
       mappings.put( url, ncName );
     }
     return url;
+  }
+
+  /**
+   * Marshalling the actual URL to job entry xml fields ( {@link #SOURCE_FILE_FOLDER } and {@link #DESTINATION_FILE_FOLDER} )
+   * @param url
+   * @param ncName
+   * @param metastore
+   * @param mappings
+   * @return
+   */
+  public String saveURL( String url, String ncName, IMetaStore metastore, Map<String, String> mappings ) {
+    return url; // simple function, sub classes can provide custom implementation.
   }
 
   public void setConfigurationMappings( Map<String, String> mappings ) {
