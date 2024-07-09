@@ -232,15 +232,13 @@ public class JobEntryCopyFiles extends JobEntryBase implements Cloneable, JobEnt
 
   protected void saveSource( StringBuilder retval, String source ) {
     String namedCluster = configurationMappings.get( source );
-    // FIXME add output from #saveURL
-    //String saveURL = saveURL( source, namedCluster, getMetaStore(), configurationMappings  ) ;
-    retval.append( "          " ).append( XMLHandler.addTagValue( SOURCE_FILE_FOLDER, KettleVFS.cleanseFilename( source ) ) );
+    String saveURL = saveURL( source, namedCluster, getMetaStore(), configurationMappings  ) ;
+    retval.append( "          " ).append( XMLHandler.addTagValue( SOURCE_FILE_FOLDER, saveURL ) );
     retval.append( "          " ).append( XMLHandler.addTagValue( SOURCE_CONFIGURATION_NAME, namedCluster ) );
   }
 
   protected void saveDestination( StringBuilder retval, String destination ) {
     String namedCluster = configurationMappings.get( destination );
-    // TODO move this logic to all saveXYZ()
     String saveURL = saveURL( destination, namedCluster, getMetaStore(), configurationMappings  ) ;
     retval.append( "          " ).append( XMLHandler.addTagValue( DESTINATION_FILE_FOLDER, saveURL ) );
     retval.append( "          " ).append( XMLHandler.addTagValue( DESTINATION_CONFIGURATION_NAME, namedCluster ) );
@@ -1191,7 +1189,7 @@ public class JobEntryCopyFiles extends JobEntryBase implements Cloneable, JobEnt
    * @return
    */
   public String saveURL( String url, String ncName, IMetaStore metastore, Map<String, String> mappings ) {
-    return url; // simple function, sub classes can provide custom implementation.
+    return url; // simple function, arguments match #loadURL, sub classes can provide custom implementation.
   }
 
   public void setConfigurationMappings( Map<String, String> mappings ) {
