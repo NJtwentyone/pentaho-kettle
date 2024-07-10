@@ -259,22 +259,16 @@ public class JobEntryCopyFiles extends JobEntryBase implements Cloneable, JobEnt
   protected void saveSourceRep( Repository rep, ObjectId id_job, ObjectId id_jobentry, int i, String value )
     throws KettleException {
     String namedCluster = configurationMappings.get( value );
-    /**
-     * TODO investigate why repository locations don't get the same treatment for URL passwords as before - KettleVFS.cleanseFilename( source )
-     * https://github.com/pentaho/pentaho-kettle/blob/97717427fdeb8100d05aa4cea9acd75894c85337/engine/src/main/java/org/pentaho/di/job/entries/copyfiles/JobEntryCopyFiles.java#L236
-     */
-    rep.saveJobEntryAttribute( id_job, getObjectId(), i, SOURCE_FILE_FOLDER, value );
+    String saveURL = saveURL( value, namedCluster, getMetaStore(), configurationMappings );
+    rep.saveJobEntryAttribute( id_job, getObjectId(), i, SOURCE_FILE_FOLDER, saveURL );
     rep.saveJobEntryAttribute( id_job, id_jobentry, i, SOURCE_CONFIGURATION_NAME, namedCluster );
   }
 
   protected void saveDestinationRep( Repository rep, ObjectId id_job, ObjectId id_jobentry, int i, String value )
     throws KettleException {
     String namedCluster = configurationMappings.get( value );
-    /**
-     * TODO investigate why repository locations don't get the same treatment for URL passwords as before - KettleVFS.cleanseFilename( destination )
-     * https://github.com/pentaho/pentaho-kettle/blob/97717427fdeb8100d05aa4cea9acd75894c85337/engine/src/main/java/org/pentaho/di/job/entries/copyfiles/JobEntryCopyFiles.java#L242
-     */
-    rep.saveJobEntryAttribute( id_job, getObjectId(), i, DESTINATION_FILE_FOLDER, value );
+    String saveURL = saveURL( value, namedCluster, getMetaStore(), configurationMappings );
+    rep.saveJobEntryAttribute( id_job, getObjectId(), i, DESTINATION_FILE_FOLDER, saveURL );
     rep.saveJobEntryAttribute( id_job, id_jobentry, i, DESTINATION_CONFIGURATION_NAME, namedCluster );
   }
 
