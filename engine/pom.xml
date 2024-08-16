@@ -525,6 +525,7 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <!-- safeyml penthao hack
     <dependency>
       <groupId>com.konloch</groupId>
       <artifactId>safeyaml</artifactId>
@@ -536,6 +537,20 @@
         </exclusion>
       </exclusions>
     </dependency>
+-->
+    <!-- DEV v 1.33 is vulnerable, v2.2 is not -->
+    <dependency>
+      <groupId>org.yaml</groupId>
+      <artifactId>snakeyaml</artifactId>
+      <version>2.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <dependency>
       <groupId>org.snmp4j</groupId>
       <artifactId>snmp4j</artifactId>
@@ -924,6 +939,7 @@
         </exclusion>
       </exclusions>
     </dependency>
+<!-- DEV failing locally due to jfrog
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>metastore</artifactId>
@@ -937,6 +953,7 @@
         </exclusion>
       </exclusions>
     </dependency>
+-->
     <dependency>
       <groupId>xmlunit</groupId>
       <artifactId>xmlunit</artifactId>
