@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.inspector.TagInspector;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
@@ -56,7 +57,8 @@ public class PocSnakeYamlCveTest {
 //    Yaml yaml = new Yaml( new Constructor( MySerialClass.class ) ); // for snakeyaml v1.33 and below
     Yaml yaml = new Yaml( new Constructor( MyTestClass.class, new LoaderOptions() ) ); // for snakeyaml v2.0+
     yaml.load( is ); // not caring about result
-
+    org.yaml.snakeyaml.inspector.TagInspector taginspector =
+      tag -> tag.getClassName().equals(MyTestClass.class.getName())
     System.out.println("End parsing.");
   }
 }
