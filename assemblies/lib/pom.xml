@@ -234,12 +234,15 @@
       <groupId>pentaho</groupId>
       <artifactId>pentaho-platform-extensions</artifactId>
       <version>${platform.version}</version>
+<!-- DEV POC include all transitive dependencies -->
+<!--
       <exclusions>
         <exclusion>
           <groupId>*</groupId>
           <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
+-->
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
