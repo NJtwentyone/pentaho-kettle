@@ -85,7 +85,9 @@ public class ConnectionFileSystem extends AbstractFileSystem implements FileSyst
     VFSConnectionDetails details = connectionManager.getDetails( connectionName );
     if ( details == null ) {
       return new UndefinedConnectionFileObject( pvfsFileName, this );
-    }
+    } else { // FIXME should details be set with space here
+      initializeVariableSpace( details ); //DEBUG next few lines need a details with resolved variables
+    } // TODO update unit tests
 
     // 3. Connections with buckets don't support degenerate root provider URIs (e.g. s3://).
     //    If using buckets, such URIs would be generated, if transformer were called.
@@ -98,10 +100,14 @@ public class ConnectionFileSystem extends AbstractFileSystem implements FileSyst
       .getExistingProvider( connectionManager, details )
       .getFileNameTransformer( connectionManager )
       .toProviderFileName( pvfsFileName, details );
+    /*
+     NOTE: error is thrown here, later in #toProvierFileName connectionDetails variable space
+       is not set from FileSystemOptions from #initializeVariableSpace
+     */
 
     AbstractFileObject<?> providerFileObject =
       (AbstractFileObject<?>) getKettleVFS()
-        .getFileObject( providerFileName.getURI(), initializeVariableSpace( details ) );
+        .getFileObject( providerFileName.getURI(), initializeVariableSpace( details ) ); // FIXME should this be called again??
 
     return new ResolvedConnectionFileObject( pvfsFileName, this, providerFileObject );
   }
