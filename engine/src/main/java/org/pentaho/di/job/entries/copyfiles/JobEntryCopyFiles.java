@@ -22,6 +22,7 @@
 
 package org.pentaho.di.job.entries.copyfiles;
 
+import org.apache.commons.vfs2.FileSystemOptions;
 import org.apache.commons.vfs2.NameScope;
 import org.pentaho.di.job.entry.validator.AbstractFileValidator;
 import org.pentaho.di.job.entry.validator.AndValidator;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1208,4 +1210,74 @@ public class JobEntryCopyFiles extends JobEntryBase implements Cloneable, JobEnt
     }
     return path;
   }
+
+  // POC
+  public static final String POC_DEBUG_VAR_NAME = "input_access_key";
+  /**
+   * POC need to implement custom hash code function that evaluates the variables value since it implements
+   * since it <code>extends JobEntryBase</code> and that <code> implements VariablesSpace</code>
+   * VariableSpace instances are used in Apace VFS FileSystemOptions logic, if options in our case variables haven't
+   * changed then no need to re-create an new Filesystem object.
+   *
+   * Here is where Apache VFS retrieves previously created Filesystem.
+   * If the options/values are the same (see compareTo snippet below):
+   *  - fetch previously created one
+   *  - else create new filesystem
+   *
+   *  <code>
+   *    protected synchronized FileSystem getFileSystem(final FileName rootName, final FileSystemOptions fileSystemOptions)
+   *             throws FileSystemException {
+   *         FileSystem fs = findFileSystem(rootName, fileSystemOptions);
+   *         if (fs == null) {
+   *             // Need to create the file system, and cache it
+   *             fs = doCreateFileSystem(rootName, fileSystemOptions);
+   *             addFileSystem(rootName, fs);
+   *         }
+   *         return fs;
+   *  </code>
+   * url: https://github.com/apache/commons-vfs/blob/rel/commons-vfs-2.8.0/commons-vfs2/src/main/java/org/apache/commons/vfs2/provider/AbstractOriginatingFileProvider.java#L87-L95
+   *
+   * The call to
+   * <code>
+   *       protected FileSystem findFileSystem(final Comparable<?> key, final FileSystemOptions fileSystemOptions) {
+   *         synchronized (fileSystemMap) {
+   *             return fileSystemMap.get(new FileSystemKey(key, fileSystemOptions));
+   *         }
+   *     }
+   * </code>
+   *
+   * url: https://github.com/apache/commons-vfs/blob/rel/commons-vfs-2.8.0/commons-vfs2/src/main/java/org/apache/commons/vfs2/provider/AbstractFileProvider.java#L116-L120
+   *
+   * (see compareTo snippet below)
+   * Here is where the options/variables are  compared against one another
+   * <code>
+   *        final int hash = Arrays.deepHashCode(myOptions.values().toArray());
+   *         final int hashFk = Arrays.deepHashCode(theirOptions.values().toArray());
+   *         return Integer.compare(hash, hashFk);
+   * </code>
+   *
+   * url: https://github.com/apache/commons-vfs/blob/rel/commons-vfs-2.8.0/commons-vfs2/src/main/java/org/apache/commons/vfs2/FileSystemOptions.java#L172-L174
+   *
+   *
+   * Example PVFS of FileSystemOptions
+   *   [1]
+   *     key = "kettle.VariableSpace"
+   *     value = instance of org.pentaho.di.job.entries.copyfiles.JobEntryCopyFiles
+   *   [2]
+   *     key = "kettle.bowl"
+   *     value = instance of DefualtBowl
+   *   [3]
+   *     key = "org.apache.commons.vfs2.provider.sftp.SftpFileSystemConfigBuilder.USER_DIR_IS_ROOT"
+   *     value = Boolean.class - false
+   */
+  @Override
+  public int hashCode() {
+    // FOR POC only worried about one variable, need to copy logic to all variables
+    return Objects.hash(getVariable( POC_DEBUG_VAR_NAME ));  //
+  }
+
+  // TODO implement #equals and #hashCode apart of java standards - https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/lang/Object.html#hashCode()
+  // TODO all classes that extend or impplement org.pentaho.di.core.variables need this logic. Maybe create have default implementation #hashCode()
+  // TODO unit tests, previous code was getting a miss on TreeMap#get
+  // NOTE: when fix is applied fileSystemMap won't grow with every call, due to cache miss from TreeMap#get
 }
