@@ -1004,7 +1004,7 @@ public class JobEntryBase implements Cloneable, VariableSpace, CheckResultSource
    *
    * @return the variable bindings for the job entry.
    */
-  protected VariableSpace getVariables() {
+  public VariableSpace getVariables() { // FIXME DEBUG Only making this public to assist in POC, do not make public without valid and agreed upon technical reason
     return variables;
   }
 
