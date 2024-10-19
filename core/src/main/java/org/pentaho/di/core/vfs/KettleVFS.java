@@ -38,6 +38,7 @@ import org.pentaho.di.core.bowl.DefaultBowl;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.core.exception.KettleFileException;
 import org.pentaho.di.core.variables.VariableSpace;
+import org.pentaho.di.core.variables.Variables;
 import org.pentaho.di.i18n.BaseMessages;
 
 import java.io.File;
@@ -45,7 +46,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,7 +60,7 @@ import java.util.regex.Pattern;
  * read and write files over VFS should use getInstance( Bowl ) and IKettleVFS.
  *
  */
-public class KettleVFS {
+public class KettleVFS<V> {
   public static final String TEMP_DIR = System.getProperty( "java.io.tmpdir" );
 
   private static Class<?> PKG = KettleVFS.class; // for i18n purposes, needed by Translator2!!
@@ -139,12 +144,71 @@ public class KettleVFS {
     return ikettleVFS.getFileObject( vfsFilename );
   }
 
+  /** POC this any new code changes/implementation should be moved to KettleVFSImpl.java and IKettleVFS.java
+  // Possible direction to enforce class that only has one responsibility like Variables.java vs JobEntryCopyFiles.java
+  public static <V extends VariableSpace> FileObject getFileObject( String vfsFilename, V space ) throws KettleFileException {
+    return ikettleVFS.getFileObject( vfsFilename, space );
+  }
+
+  */
+
+  //POC JobEntryCopyFiles.java calls this function
   /**
    * @deprecated use getInstance( Bowl )
    */
   @Deprecated
   public static FileObject getFileObject( String vfsFilename, VariableSpace space ) throws KettleFileException {
-    return ikettleVFS.getFileObject( vfsFilename, space );
+    return ikettleVFS.getFileObject( vfsFilename, getVariablesSpaceConcreteClass( space ) );
+  }
+
+  /**
+   * POC: Due to Apache's FileSystemOptions is final class + FileSystemOptions#compareTo will call
+   * Object#hashCode, we don't necessarily want to mess with existing logic
+   * in Job.java, ClusterScheme.java, DatabaseMeta.java, etc...
+   * Current class and Pentaho business logic for #hashCode may or may not take into
+   * account the values of VariablesSpace entries.
+   *
+   * @param space
+   * @return
+   * @see <a href="https://github.com/apache/commons-vfs/blob/rel/commons-vfs-2.8.0/commons-vfs2/src/main/java/org/apache/commons/vfs2/FileSystemOptions.java#L172-L174">FileSystemOptions.java#compareTo</a>
+   */
+  public static VariableSpace getVariablesSpaceConcreteClass( VariableSpace space ) {
+    if ( space == null ) {
+      return null;
+    } else if ( space.getClass().isAssignableFrom( VariableSpace.class ) ) {
+      return space; // NOTE: nothing to do here, this is what we want
+    } else  {
+      /**
+       *  Options:
+       * - [1] - pass concrete class directly to KettleVFS
+       *        - pros: simple, iff inside class that implements VariableSpace
+       *        - cons: none, really, track down all calls
+       * - [2] - re-create the instance of Variables
+       *        - pros: simple
+       *        - cons:
+       *            - creating another object in memory
+       *            - replacing possible an extending class that was created/used for a reason
+       *            - decide shallow or deep copy
+       *            - #hashCode should not be order dependent, might have to add to SortedMap.java (FileSystemOptions#compareTo does this)
+       * - [3] - Add interface to returns the class that extends VariableSpace.java
+       *        - pros:
+       *            - preserves the passed in VariableSpace possible custom class/logic
+       *            - does not create an additional object in memory
+       *        - cons:
+       *            - little more complex implementation, design pattern Adapter or something similar (https://refactoring.guru/design-patterns/adapter)
+       *            - update all the spaces of the existing classes that were mentioned earlier - Job.java, ClusterScheme.java, DatabaseMeta.java, etc...
+       */
+      // FOR POC implementing option[2] for brevity
+      Variables sortedVariables = new Variables();
+      // sort keys to make #hashCode order independent
+      List<String> sortedKeys = new ArrayList<>( Arrays.asList(
+        Arrays.copyOf( space.listVariables(), space.listVariables().length ) )
+      ); // TODO null check
+      for ( String sortedKey : sortedKeys ) {
+        sortedVariables.setVariable( sortedKey, space.getVariable( sortedKey ) );
+      }
+      return sortedVariables;
+    }
   }
 
   /**

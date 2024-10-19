@@ -32,6 +32,7 @@ import org.pentaho.di.version.BuildVersion;
 
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -264,6 +265,13 @@ public class Variables implements VariableSpace {
   // Method is defined as package-protected in order to be accessible by unit tests
   Map<String, String> getProperties() {
     return properties;
+  }
+
+  public static final String POC_DEBUG_VAR_NAME = "input_access_key";
+  @Override
+  public int hashCode() {
+    // FOR POC only worried about one variable, need to copy logic to all variables
+    return Objects.hash( getVariable( POC_DEBUG_VAR_NAME ) );  //
   }
 
 }
