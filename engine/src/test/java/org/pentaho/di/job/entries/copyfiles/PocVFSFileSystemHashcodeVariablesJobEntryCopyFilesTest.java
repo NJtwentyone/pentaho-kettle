@@ -57,6 +57,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.pentaho.di.core.util.Assert.assertNotNull;
 import static org.pentaho.di.core.util.Assert.assertNull;
+import static org.pentaho.di.core.vfs.KettleVFS.getVariablesSpaceConcreteClass;
 
 /**
  *
@@ -430,7 +431,7 @@ public class PocVFSFileSystemHashcodeVariablesJobEntryCopyFilesTest {
     variables.setVariable( POC_KEY_VAR_NAME, VALUE_VAR_ACCESS_ID );
 
     // NOTE: need to create a new instance for VariableSpace, JobEntry so logic for #equals #hashCode isn't short circuited
-    FileSystemOptions fileSystemOptions_jobEntry = testInstance( jobEntry );
+    FileSystemOptions fileSystemOptions_jobEntry = testInstance( getVariablesSpaceConcreteClass( jobEntry ) ); // NOTE: POC code change return concrete sorted Variables.java instance
     FileSystemOptions fileSystemOptions_variables = testInstance( variables );
 
     FileSystem fileSystem_variables = testInstance( PVFS_URI_1_SRC, fileSystemOptions_variables );
@@ -457,7 +458,7 @@ public class PocVFSFileSystemHashcodeVariablesJobEntryCopyFilesTest {
     VariableSpace variables_from_original_jobEntryGetVariables = jobEntry.getVariables(); // getting variables from original job
 
     // NOTE: need to create a new instance for VariableSpace, JobEntry so logic for #equals #hashCode isn't short-circuited
-    FileSystemOptions fileSystemOptions_jobEntry = testInstance( jobEntry );
+    FileSystemOptions fileSystemOptions_jobEntry = testInstance( getVariablesSpaceConcreteClass( jobEntry ) ); // NOTE: POC code change return concrete sorted Variables.java instance
     FileSystemOptions fileSystemOptions_variables_from_original_jobEntryGetVariables = testInstance( variables_from_original_jobEntryGetVariables );
 
     FileSystem fileSystem_variables = testInstance( PVFS_URI_1_SRC, fileSystemOptions_variables_from_original_jobEntryGetVariables );
@@ -520,7 +521,7 @@ public class PocVFSFileSystemHashcodeVariablesJobEntryCopyFilesTest {
     // NOTE: proven earlier BY XYZ these are equal in value
 
     // NOTE: need to create a new instance for VariableSpace, JobEntry so logic for #equals #hashCode isn't short circuited
-    FileSystemOptions fileSystemOptions_jobEntry = testInstance( jobEntry );
+    FileSystemOptions fileSystemOptions_jobEntry = testInstance( getVariablesSpaceConcreteClass( jobEntry ) ); // NOTE: POC code change return concrete sorted Variables.java instance
     FileSystemOptions fileSystemOptions_jobEntry_sameName_completely_different = testInstance( jobEntry_sameName_completely_different );
 
     FileSystem fileSystem_jobEntry = testInstance( PVFS_URI_1_SRC, fileSystemOptions_jobEntry );
