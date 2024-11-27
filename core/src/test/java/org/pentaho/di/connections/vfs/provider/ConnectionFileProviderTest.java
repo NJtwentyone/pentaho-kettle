@@ -15,6 +15,7 @@ package org.pentaho.di.connections.vfs.provider;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemOptions;
 import org.apache.commons.vfs2.impl.DefaultFileSystemManager;
 import org.apache.commons.vfs2.provider.FileNameParser;
 import org.junit.Before;
@@ -35,9 +36,12 @@ import org.pentaho.di.connections.common.domainbuckets.TestConnectionWithDomainA
 import org.pentaho.di.connections.common.domainbuckets.TestFileWithDomainAndBucketsProvider;
 import org.pentaho.di.core.bowl.BaseBowl;
 import org.pentaho.di.core.bowl.Bowl;
+import org.pentaho.di.core.variables.VariableSpace;
+import org.pentaho.di.core.variables.Variables;
 import org.pentaho.di.core.vfs.IKettleVFS;
 import org.pentaho.di.core.vfs.KettleVFS;
 import org.pentaho.di.core.vfs.KettleVFSFileSystemException;
+import org.pentaho.di.core.vfs.configuration.KettleGenericFileSystemConfigBuilder;
 import org.pentaho.metastore.api.IMetaStore;
 import org.pentaho.metastore.stores.memory.MemoryMetaStore;
 
@@ -117,6 +121,13 @@ public class ConnectionFileProviderTest {
 
     details = new TestBasicConnectionDetails();
     details.setName( "Basic Connection" );
+    connectionManager.save( details );
+
+    // TESTING ROOT PATH VARIABLES SUB
+    TestBasicConnectionDetails tbcd = new TestBasicConnectionDetails();
+    tbcd.setRootPath( "${my_var_root_path}" );
+    details = tbcd;
+    details.setName( "Basic Connection Plus Variables" );
     connectionManager.save( details );
   }
 
@@ -273,6 +284,27 @@ public class ConnectionFileProviderTest {
     assertEquals( pvfsUri, fileObject.getPublicURIString() );
     assertEquals( "pvfs://Basic Connection/path/to", fileObject.getParent().getPublicURIString() );
     assertEquals( "test4:///path/to/file.txt", fileObject.getResolvedFileObject().getPublicURIString() );
+  }
+
+  // DEBUG
+  @Test
+  public void testGetFileOfBasicConnectionVariablesSubstition() throws Exception {
+
+    // FIXME is there a better place
+    Variables myVariableSpace = new Variables();
+    myVariableSpace.setVariable("my_var_root_path",  "/some/magical/dir" );
+    FileSystemOptions myFileSystemOptions = new FileSystemOptions();
+
+    KettleGenericFileSystemConfigBuilder.getInstance().setParameter(myFileSystemOptions, "not-used-name", myVariableSpace, "not-used-vfsUrl");
+
+    String pvfsUri = "pvfs://Basic Connection Plus Variables/path/to/file.txt";
+    ConnectionFileObject fileObject = (ConnectionFileObject) getKettleVFS().getFileObject( pvfsUri, myVariableSpace );
+    assertTrue( fileObject.exists() );
+    assertNotNull( fileObject.getResolvedFileObject() );
+
+    assertEquals( pvfsUri, fileObject.getPublicURIString() ); // TODO investigate why is there 3 slashes ??
+    assertEquals( "pvfs://Basic Connection Plus Variables/path/to", fileObject.getParent().getPublicURIString() );
+    assertEquals( "test4:///some/magical/dir/path/to/file.txt", fileObject.getResolvedFileObject().getPublicURIString() );
   }
 
   @Test

@@ -24,6 +24,9 @@ import org.pentaho.metastore.persist.MetaStoreElementType;
   description = "Defines the connection details for a test vfs connection" )
 public class TestBasicConnectionDetails extends BaseVFSConnectionDetails {
 
+  //FIXME create a abstract class that handles space
+  VariableSpace space;
+
   private static String TYPE = "test4";
 
   @MetaStoreAttribute
@@ -81,10 +84,10 @@ public class TestBasicConnectionDetails extends BaseVFSConnectionDetails {
   }
 
   @Override public VariableSpace getSpace() {
-    return null;
+    return space;
   }
 
   @Override public void setSpace( VariableSpace space ) {
-
+    this.space = space;
   }
 }
