@@ -115,6 +115,11 @@ public class ConnectionFileProviderTest {
     details.setName( "Connection With Domain" );
     connectionManager.save( details );
 
+    // TESTING ROOT PATH VARIABLES SUB
+    details = new TestConnectionWithDomainDetails();
+    details.setName( "Connection Variable Substitution With Domain" );
+    connectionManager.save( details );
+
     details = new TestConnectionWithDomainAndBucketsDetails();
     details.setName( "Connection With Domain And Buckets" );
     connectionManager.save( details );
@@ -335,6 +340,29 @@ public class ConnectionFileProviderTest {
     assertEquals( pvfsUri, fileObject.getPublicURIString() );
     assertEquals( "pvfs://Connection With Domain/path/to", fileObject.getParent().getPublicURIString() );
     assertEquals( "test2://example.com/path/to/file.txt", fileObject.getResolvedFileObject().getPublicURIString() );
+  }
+
+  @Test
+  public void testGetFileOfConnectionVariableSubstitutionWithDomain() throws Exception {
+
+    TestConnectionWithDomainDetails connectionDetails = (TestConnectionWithDomainDetails)
+      connectionManager.getConnectionDetails( "Connection Variable Substitution With Domain" );
+    connectionDetails.setRootPath( "${my_var_root_path}" );
+
+    Variables myVariableSpace = new Variables();
+    myVariableSpace.setVariable( "my_var_root_path",  "/some/magical/dir" );
+
+    KettleGenericFileSystemConfigBuilder.getInstance().setParameter(
+      new FileSystemOptions(), "not-used-name", myVariableSpace, "not-used-vfsUrl" );
+
+    String pvfsUri = "pvfs://Connection Variable Substitution With Domain/path/to/file.txt";
+    ConnectionFileObject fileObject = (ConnectionFileObject) getKettleVFS().getFileObject( pvfsUri, myVariableSpace );
+    assertTrue( fileObject.exists() );
+    assertNotNull( fileObject.getResolvedFileObject() );
+
+    assertEquals( pvfsUri, fileObject.getPublicURIString() );
+    assertEquals( "pvfs://Connection Variable Substitution With Domain/path/to", fileObject.getParent().getPublicURIString() );
+    assertEquals( "test2://example.com/some/magical/dir/path/to/file.txt", fileObject.getResolvedFileObject().getPublicURIString() );
   }
 
   @Test
