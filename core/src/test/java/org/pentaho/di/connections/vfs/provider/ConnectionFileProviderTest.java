@@ -36,7 +36,6 @@ import org.pentaho.di.connections.common.domainbuckets.TestConnectionWithDomainA
 import org.pentaho.di.connections.common.domainbuckets.TestFileWithDomainAndBucketsProvider;
 import org.pentaho.di.core.bowl.BaseBowl;
 import org.pentaho.di.core.bowl.Bowl;
-import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.core.variables.Variables;
 import org.pentaho.di.core.vfs.IKettleVFS;
 import org.pentaho.di.core.vfs.KettleVFS;
@@ -111,11 +110,14 @@ public class ConnectionFileProviderTest {
     details.setName( "Connection With Buckets" );
     connectionManager.save( details );
 
+    details = new TestConnectionWithBucketsDetails();
+    details.setName( "Connection Variable Substitution With Buckets" );
+    connectionManager.save( details );
+
     details = new TestConnectionWithDomainDetails();
     details.setName( "Connection With Domain" );
     connectionManager.save( details );
 
-    // TESTING ROOT PATH VARIABLES SUB
     details = new TestConnectionWithDomainDetails();
     details.setName( "Connection Variable Substitution With Domain" );
     connectionManager.save( details );
@@ -124,7 +126,6 @@ public class ConnectionFileProviderTest {
     details.setName( "Connection With Domain And Buckets" );
     connectionManager.save( details );
 
-    // TESTING ROOT PATH VARIABLES SUB
     details = new TestConnectionWithDomainAndBucketsDetails();
     details.setName( "Connection Variable Substitution With Domain And Buckets" );
     connectionManager.save( details );
@@ -133,7 +134,6 @@ public class ConnectionFileProviderTest {
     details.setName( "Basic Connection" );
     connectionManager.save( details );
 
-    // TESTING ROOT PATH VARIABLES SUB
     details = new TestBasicConnectionDetails();
     details.setName( "Basic Connection Variable Substitution" );
     connectionManager.save( details );
@@ -328,6 +328,29 @@ public class ConnectionFileProviderTest {
     assertEquals( pvfsUri, fileObject.getPublicURIString() );
     assertEquals( "pvfs://Connection With Buckets/bucket/path/to", fileObject.getParent().getPublicURIString() );
     assertEquals( "test://bucket/path/to/file.txt", fileObject.getResolvedFileObject().getPublicURIString() );
+  }
+
+  @Test
+  public void testGetFileOfConnectionVariableSubstitutionWithBuckets() throws Exception {
+
+    TestConnectionWithBucketsDetails connectionDetails = (TestConnectionWithBucketsDetails)
+      connectionManager.getConnectionDetails( "Connection Variable Substitution With Buckets" );
+    connectionDetails.setRootPath( "${my_var_root_path}" );
+
+    Variables myVariableSpace = new Variables();
+    myVariableSpace.setVariable( "my_var_root_path",  "/some/magical/dir" );
+
+    KettleGenericFileSystemConfigBuilder.getInstance().setParameter(
+      new FileSystemOptions(), "not-used-name", myVariableSpace, "not-used-vfsUrl" );
+
+    String pvfsUri = "pvfs://Connection Variable Substitution With Buckets/bucket/path/to/file.txt";
+    ConnectionFileObject fileObject = (ConnectionFileObject) getKettleVFS().getFileObject( pvfsUri, myVariableSpace );
+    assertTrue( fileObject.exists() );
+    assertNotNull( fileObject.getResolvedFileObject() );
+
+    assertEquals( pvfsUri, fileObject.getPublicURIString() );
+    assertEquals( "pvfs://Connection Variable Substitution With Buckets/bucket/path/to", fileObject.getParent().getPublicURIString() );
+    assertEquals( "test://some/magical/dir/bucket/path/to/file.txt", fileObject.getResolvedFileObject().getPublicURIString() );
   }
 
   @Test

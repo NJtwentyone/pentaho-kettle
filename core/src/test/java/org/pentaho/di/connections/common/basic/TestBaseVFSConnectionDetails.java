@@ -3,7 +3,7 @@ package org.pentaho.di.connections.common.basic;
 import org.pentaho.di.connections.vfs.BaseVFSConnectionDetails;
 import org.pentaho.di.core.variables.VariableSpace;
 
-abstract class TestBaseVFSConnectionDetails extends BaseVFSConnectionDetails {
+public abstract class TestBaseVFSConnectionDetails extends BaseVFSConnectionDetails {
 
   VariableSpace space;
 
