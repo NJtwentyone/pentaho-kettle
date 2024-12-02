@@ -22,10 +22,7 @@ import org.pentaho.metastore.persist.MetaStoreElementType;
 @MetaStoreElementType(
   name = "Test VFS Connection With No Domain and No Buckets",
   description = "Defines the connection details for a test vfs connection" )
-public class TestBasicConnectionDetails extends BaseVFSConnectionDetails {
-
-  //FIXME create a abstract class that handles space
-  VariableSpace space;
+public class TestBasicConnectionDetails extends TestBaseVFSConnectionDetails {
 
   private static String TYPE = "test4";
 
@@ -83,11 +80,4 @@ public class TestBasicConnectionDetails extends BaseVFSConnectionDetails {
     this.password1 = password1;
   }
 
-  @Override public VariableSpace getSpace() {
-    return space;
-  }
-
-  @Override public void setSpace( VariableSpace space ) {
-    this.space = space;
-  }
 }
