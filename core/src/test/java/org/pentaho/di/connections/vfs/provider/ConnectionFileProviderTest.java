@@ -354,21 +354,25 @@ public class ConnectionFileProviderTest {
   @Test
   public void testGetFileOfConnectionConnectionVariableSubstitutionBucketsWithDomainAndBuckets() throws Exception {
 
-    Variables myVariableSpace = new Variables();
-    myVariableSpace.setVariable("my_var_root_path",  "/some/magical/dir" );
-    FileSystemOptions myFileSystemOptions = new FileSystemOptions();
+    TestConnectionWithDomainAndBucketsDetails connectionDetails = (TestConnectionWithDomainAndBucketsDetails)
+      connectionManager.getConnectionDetails( "Connection Variable Substitution With Domain And Buckets" );
+    connectionDetails.setRootPath( "${my_var_root_path}" );
 
-    KettleGenericFileSystemConfigBuilder.getInstance().setParameter(myFileSystemOptions, "not-used-name", myVariableSpace, "not-used-vfsUrl");
+    Variables myVariableSpace = new Variables();
+    myVariableSpace.setVariable( "my_var_root_path",  "/some/magical/dir" );
+
+    KettleGenericFileSystemConfigBuilder.getInstance().setParameter(
+      new FileSystemOptions(), "not-used-name", myVariableSpace, "not-used-vfsUrl" );
 
     String pvfsUri = "pvfs://Connection Variable Substitution With Domain And Buckets/bucket/path/to/file.txt";
-    ConnectionFileObject fileObject = (ConnectionFileObject) getKettleVFS().getFileObject( pvfsUri );
+    ConnectionFileObject fileObject = (ConnectionFileObject) getKettleVFS().getFileObject( pvfsUri, myVariableSpace );
     assertTrue( fileObject.exists() );
     assertNotNull( fileObject.getResolvedFileObject() );
 
     assertEquals( pvfsUri, fileObject.getPublicURIString() );
     assertEquals( "pvfs://Connection Variable Substitution With Domain And Buckets/bucket/path/to",
       fileObject.getParent().getPublicURIString() );
-    assertEquals( "test3://example.com/bucket/path/to/file.txt",
+    assertEquals( "test3://example.com/some/magical/dir/bucket/path/to/file.txt",
       fileObject.getResolvedFileObject().getPublicURIString() );
   }
 
