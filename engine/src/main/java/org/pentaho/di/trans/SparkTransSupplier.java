@@ -21,16 +21,19 @@
  ******************************************************************************/
 package org.pentaho.di.trans;
 
+import org.pentaho.di.core.util.Utils;
 import org.pentaho.di.trans.ael.websocket.TransWebSocketEngineAdapter;
 import org.pentaho.di.core.logging.LogChannelInterface;
 import org.pentaho.di.core.variables.Variables;
 import org.pentaho.di.i18n.BaseMessages;
 
 import java.net.URI;
+import java.util.function.Supplier;
 
 public class SparkTransSupplier implements TransSupplier {
 
   private static final Class<?> PKG = SparkTransSupplier.class;
+  private static final String MSG_KETTLE_ENGINE = "TransSupplier.SelectedEngine.Kettle";
   private static final String MSG_SPARK_ENGINE = "TransSupplier.SelectedEngine.Spark";
 
   public SparkTransSupplier() {
@@ -40,7 +43,11 @@ public class SparkTransSupplier implements TransSupplier {
    * Creates the appropriate trans.  Either 1)  A {@link TransWebSocketEngineAdapter} wrapping an Engine if an alternate
    * execution engine has been selected 2)  A legacy {@link Trans} otherwise.
    */
-  public Trans get( TransMeta transMeta, LogChannelInterface log ) {
+  public Trans get( TransMeta transMeta, LogChannelInterface log, Supplier<Trans> fallbackSupplier ) {
+    if ( Utils.isEmpty( transMeta.getVariable( "engine" ) ) ) {
+      log.logBasic( BaseMessages.getString( PKG, MSG_KETTLE_ENGINE ) );
+      return fallbackSupplier.get();
+    }
     Variables variables = new Variables();
     variables.initializeVariablesFrom( null );
     String protocol = transMeta.environmentSubstitute( transMeta.getVariable( "engine.scheme" ) );

@@ -60,8 +60,8 @@ public class TransSupplierTest {
   public void testFallback() throws KettleException {
     when( fallbackSupplier.get() ).thenReturn( trans );
 
-    transSupplier = new SparkTransSupplier();
-    Trans transRet = transSupplier.get( meta, log );
+    transSupplier = new DefaultTransSupplier();
+    Trans transRet = transSupplier.get( meta, log, fallbackSupplier );
 
     verify( fallbackSupplier ).get();
     assertEquals( transRet, trans );
@@ -78,7 +78,7 @@ public class TransSupplierTest {
     when( transHopMeta.isEnabled() ).thenReturn( false );
 
     transSupplier = new SparkTransSupplier();
-    Trans transRet = transSupplier.get( meta, log );
+    Trans transRet = transSupplier.get( meta, log, fallbackSupplier );
 
     assertTrue( transRet instanceof TransWebSocketEngineAdapter );
   }
@@ -89,6 +89,6 @@ public class TransSupplierTest {
     when( meta.getVariable( "engine" ) ).thenReturn( "invalidEngine" );
 
     transSupplier = new SparkTransSupplier();
-    transSupplier.get( meta, log );
+    transSupplier.get( meta, log, fallbackSupplier );
   }
 }
