@@ -31,6 +31,8 @@ import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.engine.configuration.api.RunConfiguration;
 import org.pentaho.di.engine.configuration.api.RunConfigurationExecutor;
 import org.pentaho.di.repository.Repository;
+import org.pentaho.di.trans.SparkTransSupplier;
+import org.pentaho.di.trans.TransMeta;
 
 /**
  * Created by bmorrise on 3/17/17.
@@ -77,5 +79,6 @@ public class SparkRunConfigurationExecutor implements RunConfigurationExecutor {
     // Sets the appropriate variables on the transformation for the spark engine
     variableSpace.setVariable( "engine", "remote" );
     variableSpace.setVariable( "engine.remote", "spark" );
+    meta.setTransSupplier( new SparkTransSupplier() );
   }
 }

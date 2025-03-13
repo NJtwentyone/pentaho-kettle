@@ -61,6 +61,7 @@ public class DefaultRunConfigurationExecutor implements RunConfigurationExecutor
     variableSpace.setVariable( "engine.remote", null );
     variableSpace.setVariable( "engine.scheme", null );
     variableSpace.setVariable( "engine.url", null );
+    meta.setTransSupplier( null );
   }
 
   private void configureTransExecution( TransExecutionConfiguration transExecutionConfiguration,

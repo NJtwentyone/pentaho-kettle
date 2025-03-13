@@ -60,8 +60,8 @@ public class TransSupplierTest {
   public void testFallback() throws KettleException {
     when( fallbackSupplier.get() ).thenReturn( trans );
 
-    transSupplier = new TransSupplier( meta, log, fallbackSupplier );
-    Trans transRet = transSupplier.get();
+    transSupplier = new SparkTransSupplier();
+    Trans transRet = transSupplier.get( meta, log );
 
     verify( fallbackSupplier ).get();
     assertEquals( transRet, trans );
@@ -77,8 +77,8 @@ public class TransSupplierTest {
     when( meta.realClone( false ) ).thenReturn( meta );
     when( transHopMeta.isEnabled() ).thenReturn( false );
 
-    transSupplier = new TransSupplier( meta, log, fallbackSupplier );
-    Trans transRet = transSupplier.get();
+    transSupplier = new SparkTransSupplier();
+    Trans transRet = transSupplier.get( meta, log );
 
     assertTrue( transRet instanceof TransWebSocketEngineAdapter );
   }
@@ -88,7 +88,7 @@ public class TransSupplierTest {
     props.setProperty( "KETTLE_AEL_PDI_DAEMON_VERSION", "1.0" );
     when( meta.getVariable( "engine" ) ).thenReturn( "invalidEngine" );
 
-    transSupplier = new TransSupplier( meta, log, fallbackSupplier );
-    transSupplier.get();
+    transSupplier = new SparkTransSupplier();
+    transSupplier.get( meta, log );
   }
 }
