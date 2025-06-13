@@ -93,16 +93,18 @@ public class KettleURLClassLoader extends URLClassLoader {
 
   @Override
   protected synchronized Class<?> loadClass( String arg0, boolean arg1 ) throws ClassNotFoundException {
-    try {
-      return loadClassFromThisLoader( arg0, arg1 );
+    try { // FIXME DEV should delegate to parent first, then try this loader
+      //return loadClassFromThisLoader( arg0, arg1 );
+      return loadClassFromParent( arg0, arg1 );
     } catch ( ClassNotFoundException | NoClassDefFoundError e ) {
       // ignore
     } catch ( SecurityException e ) {
       System.err.println( BaseMessages.getString( PKG, "KettleURLClassLoader.Exception.UnableToLoadClass",
               e.toString() ) );
     }
-
-    return loadClassFromParent( arg0, arg1 );
+    // TODO investigate the current implementation, it seems to be a bit backwards... and if any other code relies on that approach
+    //return loadClassFromParent( arg0, arg1 );
+    return loadClassFromThisLoader( arg0, arg1 );
   }
 
   /*
