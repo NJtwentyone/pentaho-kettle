@@ -527,7 +527,7 @@ public class TransMeta extends AbstractMeta
    *          the o
    * @return the int
    * @see #compare(TransMeta, TransMeta)
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
+   * @see Comparable#compareTo(Object)
    */
   @Override
   public int compareTo( TransMeta o ) {
@@ -543,7 +543,7 @@ public class TransMeta extends AbstractMeta
    *          the obj
    * @return true, if successful
    * @see #compare(TransMeta, TransMeta)
-   * @see java.lang.Object#equals(java.lang.Object)
+   * @see Object#equals(Object)
    */
   @Override
   public boolean equals( Object obj ) {
@@ -558,7 +558,7 @@ public class TransMeta extends AbstractMeta
    * Clones the transformation meta-data object.
    *
    * @return a clone of the transformation meta-data object
-   * @see java.lang.Object#clone()
+   * @see Object#clone()
    */
   @Override
   public Object clone() {
@@ -2377,7 +2377,7 @@ public class TransMeta extends AbstractMeta
    * @return the XML representation of this transformation
    * @throws KettleException
    *           if any errors occur during generation of the XML
-   * @see org.pentaho.di.core.xml.XMLInterface#getXML()
+   * @see XMLInterface#getXML()
    */
   @Override
   public String getXML() throws KettleException {
@@ -6342,7 +6342,7 @@ public class TransMeta extends AbstractMeta
    * Gets the repository element type.
    *
    * @return the repository element type
-   * @see org.pentaho.di.repository.RepositoryElementInterface#getRepositoryElementType()
+   * @see RepositoryElementInterface#getRepositoryElementType()
    */
   @Override
   public RepositoryObjectType getRepositoryElementType() {
@@ -6362,7 +6362,7 @@ public class TransMeta extends AbstractMeta
    * Gets the log channel ID.
    *
    * @return the log channel ID
-   * @see org.pentaho.di.core.logging.LoggingObjectInterface#getLogChannelId()
+   * @see LoggingObjectInterface#getLogChannelId()
    */
   @Override
   public String getLogChannelId() {
@@ -6373,7 +6373,7 @@ public class TransMeta extends AbstractMeta
    * Gets the object type.
    *
    * @return the object type
-   * @see org.pentaho.di.core.logging.LoggingObjectInterface#getObjectType()
+   * @see LoggingObjectInterface#getObjectType()
    */
   @Override
   public LoggingObjectType getObjectType() {
