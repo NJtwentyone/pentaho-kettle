@@ -93,10 +93,13 @@ public class KettleURLClassLoader extends URLClassLoader {
 
   @Override
   protected synchronized Class<?> loadClass( String arg0, boolean arg1 ) throws ClassNotFoundException {
+    Exception selfFirstException;
     try {
       return loadClassFromThisLoader( arg0, arg1 );
     } catch ( ClassNotFoundException | NoClassDefFoundError e ) {
       // ignore
+      //DEBUG - Maybe there is an error that needs to be propagated up
+      selfFirstException = (Exception) e;
     } catch ( SecurityException e ) {
       System.err.println( BaseMessages.getString( PKG, "KettleURLClassLoader.Exception.UnableToLoadClass",
               e.toString() ) );
