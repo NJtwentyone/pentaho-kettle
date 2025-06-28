@@ -92,20 +92,31 @@ public class KettleURLClassLoader extends URLClassLoader {
   }
 
   @Override
-  protected synchronized Class<?> loadClass( String arg0, boolean arg1 ) throws ClassNotFoundException {
-    Exception selfFirstException;
+  protected synchronized Class<?> loadClass( String name, boolean resolve ) throws ClassNotFoundException {
+    Throwable thisLoaderThrowable = null;
     try {
-      return loadClassFromThisLoader( arg0, arg1 );
+      return loadClassFromThisLoader( name, resolve );
     } catch ( ClassNotFoundException | NoClassDefFoundError e ) {
       // ignore
       //DEBUG - Maybe there is an error that needs to be propagated up
-      selfFirstException = (Exception) e;
+      thisLoaderThrowable = e;
     } catch ( SecurityException e ) {
       System.err.println( BaseMessages.getString( PKG, "KettleURLClassLoader.Exception.UnableToLoadClass",
-              e.toString() ) );
+        e.toString() ) );
     }
-
-    return loadClassFromParent( arg0, arg1 );
+    ClassNotFoundException parentLoaderException = null;
+    try {
+      return loadClassFromParent( name, resolve );
+    } catch ( ClassNotFoundException e ) {
+      parentLoaderException = e;
+      if ( thisLoaderThrowable != null && thisLoaderThrowable instanceof NoClassDefFoundError
+        &&  thisLoaderThrowable.getMessage() != null
+        // TODO search for fully qualified class name with '.' and  '/' that doesn't match arg0/name
+        && !thisLoaderThrowable.getMessage().contains( name.replace( '.', '/' ) ) ) {
+        parentLoaderException.addSuppressed( thisLoaderThrowable );
+      }
+    }
+    throw parentLoaderException; // TODO find better way to handle this
   }
 
   /*
