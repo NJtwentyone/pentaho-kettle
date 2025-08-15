@@ -24,6 +24,8 @@ import org.pentaho.di.core.exception.KettleFileException;
 import org.pentaho.di.core.util.EnvUtil;
 import org.pentaho.di.core.util.Utils;
 import org.pentaho.di.core.vfs.KettleVFS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,6 +38,8 @@ import java.util.List;
  *
  */
 public class PluginFolder implements PluginFolderInterface {
+
+  private static final Logger LOG = LoggerFactory.getLogger( PluginFolder.class );
 
   private String folder;
   private boolean pluginXmlFolder;
@@ -87,6 +91,7 @@ public class PluginFolder implements PluginFolderInterface {
   public static List<PluginFolderInterface> populateFolders( String xmlSubfolder ) {
     List<PluginFolderInterface> pluginFolders = new ArrayList<>();
     String folderPaths = EnvUtil.getSystemProperty( Const.PLUGIN_BASE_FOLDERS_PROP );
+    LOG.info("[POC][DEBUG] populateFolders() Setting KETTLE_PLUGIN_BASE_FOLDERS: {}", System.getProperty( Const.PLUGIN_BASE_FOLDERS_PROP ) );
     if ( folderPaths == null ) {
       folderPaths = Const.DEFAULT_PLUGIN_BASE_FOLDERS;
     }
@@ -94,6 +99,8 @@ public class PluginFolder implements PluginFolderInterface {
     // for each folder in the list of plugin base folders
     // add an annotation and xml path for searching
     // trim the folder - we don't need leading and trailing spaces
+    LOG.info("[POC][DEBUG] populateFolders(xmlSubfolder={}) folderPaths: {}", xmlSubfolder, folderPaths);
+
     for ( String folder : folders ) {
       folder = folder.trim();
       pluginFolders.add( new PluginFolder( folder, false, true ) );
@@ -106,7 +113,12 @@ public class PluginFolder implements PluginFolderInterface {
 
   @Override
   public FileObject[] findJarFiles() throws KettleFileException {
-    return findJarFiles( searchLibDir );
+    FileObject[] ret = findJarFiles( searchLibDir );
+
+    LOG.info( "[POC][DEBUG] findJarFiles() current directory (\"user.dir\"): {}", System.getProperty( "user.dir" ) );
+    LOG.info( "[POC][DEBUG] findJarFiles() current directory (./): {}", new File("./").getAbsolutePath() );
+    LOG.info( "[POC][DEBUG] findJarFiles() Found {} jar files in plugin folder '{}'", (ret == null) ? -1 : ret.length, this.getFolder() );
+    return ret;
   }
 
   public FileObject[] findJarFiles( final boolean includeLibJars ) throws KettleFileException {
@@ -115,6 +127,7 @@ public class PluginFolder implements PluginFolderInterface {
       // Find all the jar files in this folder...
       //
       FileObject folderObject = KettleVFS.getInstance( DefaultBowl.getInstance() ).getFileObject( this.getFolder() );
+      LOG.info( "[POC][DEBUG] Finding jar files in folder: {}", folderObject );
 
       return folderObject.findFiles( new FileSelector() {
         @Override
