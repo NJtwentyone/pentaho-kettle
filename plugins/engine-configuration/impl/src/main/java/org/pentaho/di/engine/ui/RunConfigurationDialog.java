@@ -42,8 +42,13 @@ import org.pentaho.di.engine.configuration.api.RunConfiguration;
 import org.pentaho.di.engine.configuration.api.RunConfigurationService;
 import org.pentaho.di.engine.configuration.impl.pentaho.DefaultRunConfiguration;
 import org.pentaho.di.i18n.BaseMessages;
+import org.pentaho.di.ui.api.widget.ButtonWidget;
+import org.pentaho.di.ui.api.widget.GroupWidget;
 import org.pentaho.di.ui.core.ConstUI;
 import org.pentaho.di.ui.core.PropsUI;
+import org.pentaho.di.ui.core.widget.SwtButtonAdapter;
+import org.pentaho.di.ui.core.widget.SwtGroupAdapter;
+import org.pentaho.di.ui.core.widget.SwtTextAdapter;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 import org.pentaho.di.ui.util.SwtSvgImageUtil;
 
@@ -54,8 +59,9 @@ import java.util.Map;
 /**
  * Created by bmorrise on 3/15/17.
  */
+// FIXME rename this name RunConfigurationDialog is already used in the interface
 public class RunConfigurationDialog extends Dialog
-  implements org.pentaho.di.engine.configuration.api.RunConfigurationDialog {
+  implements SwtRunConfigurationDialog {
 
   private static Class<?> PKG = RunConfigurationDialog.class;
 
@@ -65,6 +71,7 @@ public class RunConfigurationDialog extends Dialog
 
   private Label wlName;
   private Text wName;
+  private SwtTextAdapter swtTextAdapter;
 
   private Label wlDescription;
   private Text wDescription;
@@ -73,10 +80,13 @@ public class RunConfigurationDialog extends Dialog
   private CCombo wEngine;
 
   private Group gOptions;
+  private SwtGroupAdapter swtGroupAdapter;
 
   private Button wCancel;
+  private SwtButtonAdapter swtButtonAdapterCancel;
 
   private Button wOK;
+  private SwtButtonAdapter swtButtonAdapterOk;
 
   private RunConfiguration runConfiguration;
   private RunConfiguration savedRunConfiguration;
@@ -133,6 +143,7 @@ public class RunConfigurationDialog extends Dialog
     wlName.setLayoutData( fdlName );
 
     wName = new Text( wSettings, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
+    swtTextAdapter = new SwtTextAdapter( wName );
     props.setLook( wName );
     FormData fdName = new FormData();
     fdName.left = new FormAttachment( 0, 0 );
@@ -193,6 +204,7 @@ public class RunConfigurationDialog extends Dialog
     wEngine.setLayoutData( fdEngine );
 
     gOptions = new Group( wSettings, SWT.SHADOW_ETCHED_IN );
+    swtGroupAdapter = new SwtGroupAdapter( gOptions );
     gOptions.setText( BaseMessages.getString( PKG, "RunConfigurationDialog.Group.Settings" ) );
     props.setLook( gOptions );
 
@@ -204,6 +216,7 @@ public class RunConfigurationDialog extends Dialog
     gOptions.setLayoutData( fdOptions );
 
     wCancel = new Button( shell, SWT.PUSH );
+    swtButtonAdapterCancel = new SwtButtonAdapter( wCancel );
     wCancel.setText( BaseMessages.getString( PKG, "System.Button.Cancel" ) );
     FormData fdCancel = new FormData();
     fdCancel.right = new FormAttachment( 100, 0 );
@@ -211,6 +224,7 @@ public class RunConfigurationDialog extends Dialog
     wCancel.setLayoutData( fdCancel );
 
     wOK = new Button( shell, SWT.PUSH );
+    swtButtonAdapterOk = new SwtButtonAdapter( wOK );
     wOK.setText( BaseMessages.getString( PKG, "System.Button.OK" ) );
     FormData fdOk = new FormData();
     fdOk.right = new FormAttachment( wCancel, -5 );
@@ -343,16 +357,21 @@ public class RunConfigurationDialog extends Dialog
 
     return true;
   }
-
-  @Override public Text getName() {
-    return wName;
+  
+  @Override public SwtTextAdapter getName() {
+    return swtTextAdapter;
   }
 
-  @Override public Button getOKButton() {
-    return wOK;
+  @Override public SwtGroupAdapter getGroup() {
+    return swtGroupAdapter;
   }
 
-  @Override public Group getGroup() {
-    return gOptions;
+  @Override public SwtButtonAdapter getOKButton() {
+    return swtButtonAdapterOk;
   }
+
+  @Override public SwtButtonAdapter getCancelButton() {
+    return swtButtonAdapterCancel;
+  }
+
 }

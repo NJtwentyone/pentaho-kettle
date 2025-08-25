@@ -22,8 +22,8 @@
   </properties>
 
   <modules>
-    <module>api</module>
     <module>impl</module>
+    <module>ui</module>
     <module>assemblies</module>
   </modules>
 
