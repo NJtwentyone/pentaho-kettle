@@ -33,8 +33,8 @@ public abstract class MetaStoreRunConfigurationFactory implements RunConfigurati
     this.metastoreSupplier = metastoreSupplier;
   }
 
-  private <T extends RunConfiguration> MetaStoreFactory<T> getMetastoreFactory( Class<T> clazz,
-                                                                                IMetaStore metaStore ) {
+  private <T extends RunConfiguration> MetaStoreFactory<T> getMetastoreFactory(Class<T> clazz,
+                                                                               IMetaStore metaStore ) {
     return new MetaStoreFactory<>( clazz, metaStore, NAMESPACE );
   }
 
