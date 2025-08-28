@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.pentaho.di.base.AbstractMeta;
@@ -34,6 +35,7 @@ import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.util.Utils;
 import org.pentaho.di.engine.configuration.api.RunConfigurationDialog;
 import org.pentaho.di.engine.configuration.api.RunConfigurationUI;
+import org.pentaho.di.engine.ui.SwtRunConfigurationDialog;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.TransMeta;
 import org.pentaho.di.ui.core.PropsUI;
@@ -56,7 +58,7 @@ public class DefaultRunConfigurationUI implements RunConfigurationUI {
   private Supplier<Spoon> spoonSupplier = Spoon::getInstance;
   private PropsUI props = PropsUI.getInstance();
   private DefaultRunConfiguration defaultRunConfiguration;
-  private RunConfigurationDialog runConfigurationDialog;
+  private SwtRunConfigurationDialog runConfigurationDialog;
 
   private CCombo wcSlaveServer;
 
@@ -65,14 +67,27 @@ public class DefaultRunConfigurationUI implements RunConfigurationUI {
   }
 
   @Override public void attach( RunConfigurationDialog runConfigurationDialog ) {
+    if ( runConfigurationDialog instanceof SwtRunConfigurationDialog ) {
+      attach( (SwtRunConfigurationDialog) runConfigurationDialog );
+    } else {
+      throw new IllegalArgumentException( BaseMessages.getString( PKG,
+        "DefaultRunConfigurationDialog.Error.NotSwtRunConfigurationDialog",
+        SwtRunConfigurationDialog.class.getName()
+        )
+      );
+    }
+  }
+
+  public void attach( SwtRunConfigurationDialog runConfigurationDialog ) {
     this.runConfigurationDialog = runConfigurationDialog;
 
     FormLayout gformLayout = new FormLayout();
     gformLayout.marginWidth = 10;
     gformLayout.marginHeight = 10;
-    runConfigurationDialog.getGroup().setLayout( gformLayout );
+    Group runConfigurationDialogGroup = runConfigurationDialog.getGroup().getUnderlyingWidget();
+    runConfigurationDialogGroup.setLayout( gformLayout );
 
-    Composite wTarget = new Composite( runConfigurationDialog.getGroup(), SWT.NONE );
+    Composite wTarget = new Composite( runConfigurationDialogGroup, SWT.NONE );
     wTarget.setLayout( new FormLayout() );
     props.setLook( wTarget );
 
@@ -114,7 +129,7 @@ public class DefaultRunConfigurationUI implements RunConfigurationUI {
     fdTarget.top = new FormAttachment( 0 );
     wTarget.setLayoutData( fdTarget );
 
-    Label vSpacer = new Label( runConfigurationDialog.getGroup(), SWT.VERTICAL | SWT.SEPARATOR );
+    Label vSpacer = new Label( runConfigurationDialogGroup, SWT.VERTICAL | SWT.SEPARATOR );
     FormData fdvSpacer = new FormData();
     fdvSpacer.width = 1;
     fdvSpacer.left = new FormAttachment( wTarget, 30 );
@@ -122,7 +137,7 @@ public class DefaultRunConfigurationUI implements RunConfigurationUI {
     fdvSpacer.bottom = new FormAttachment( 100, 0 );
     vSpacer.setLayoutData( fdvSpacer );
 
-    Composite wcLocal = new Composite( runConfigurationDialog.getGroup(), SWT.NONE );
+    Composite wcLocal = new Composite( runConfigurationDialogGroup, SWT.NONE );
     props.setLook( wcLocal );
     wcLocal.setLayout( new GridLayout() );
 
@@ -141,7 +156,7 @@ public class DefaultRunConfigurationUI implements RunConfigurationUI {
     fdcLocal.bottom = new FormAttachment( 100 );
     wcLocal.setLayoutData( fdcLocal );
 
-    Composite wcPentaho = new Composite( runConfigurationDialog.getGroup(), SWT.NONE );
+    Composite wcPentaho = new Composite( runConfigurationDialogGroup, SWT.NONE );
     props.setLook( wcPentaho );
     wcPentaho.setLayout( new GridLayout() );
 
@@ -160,7 +175,7 @@ public class DefaultRunConfigurationUI implements RunConfigurationUI {
     fdcPentaho.bottom = new FormAttachment( 100 );
     wcPentaho.setLayoutData( fdcPentaho );
 
-    Composite wcRemote = new Composite( runConfigurationDialog.getGroup(), SWT.NONE );
+    Composite wcRemote = new Composite( runConfigurationDialogGroup, SWT.NONE );
     props.setLook( wcRemote );
     wcRemote.setLayout( new FormLayout() );
 

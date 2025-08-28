@@ -13,15 +13,40 @@
 
 package org.pentaho.di.engine.configuration.api;
 
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Text;
+import org.pentaho.di.ui.api.widget.ButtonWidget;
+import org.pentaho.di.ui.api.widget.GroupWidget;
+import org.pentaho.di.ui.api.widget.TextWidget;
 
 /**
- * Created by bmorrise on 8/22/17.
+ * Interface for Run Configuration Dialogs.
+ * Provides access to UI widgets for configuring and running Pentaho jobs.
  */
 public interface RunConfigurationDialog {
-  Text getName();
-  Button getOKButton();
-  Group getGroup();
+  /**
+   * Gets the TextWidget representing the name field.
+   *
+   * @return the name TextWidget
+   */
+  TextWidget getName();
+
+  /**
+   * Gets the GroupWidget representing the group section.
+   *
+   * @return the group GroupWidget
+   */
+  GroupWidget getGroup();
+
+  /**
+   * Gets the OK ButtonWidget.
+   *
+   * @return the OK ButtonWidget
+   */
+  ButtonWidget getOKButton();
+
+  /**
+   * Gets the Cancel ButtonWidget.
+   *
+   * @return the Cancel ButtonWidget
+   */
+  ButtonWidget getCancelButton();
 }

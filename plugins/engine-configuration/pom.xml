@@ -23,6 +23,7 @@
 
   <modules>
     <module>impl</module>
+    <module>ui</module>
     <module>assemblies</module>
   </modules>
 
