@@ -13,15 +13,17 @@
 
 package org.pentaho.di.engine.configuration.api;
 
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Text;
+import org.pentaho.di.ui.api.widget.ButtonWidget;
+import org.pentaho.di.ui.api.widget.GroupWidget;
+import org.pentaho.di.ui.api.widget.TextWidget;
 
 /**
  * Created by bmorrise on 8/22/17.
  */
 public interface RunConfigurationDialog {
-  Text getName();
-  Button getOKButton();
-  Group getGroup();
+  TextWidget getName();
+  // Engine Dropdown ??
+  GroupWidget getGroup();
+  ButtonWidget getOKButton();
+  ButtonWidget getCancelButton();
 }
