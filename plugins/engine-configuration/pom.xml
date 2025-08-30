@@ -22,9 +22,10 @@
   </properties>
 
   <modules>
+    <module>api</module>
     <module>impl</module>
     <module>ui</module>
-    <module>assemblies</module>
+    <module>assemblies</module> <!-- TODO update assemblies, also look into kettle/ui assembly -->
   </modules>
 
   <dependencies>

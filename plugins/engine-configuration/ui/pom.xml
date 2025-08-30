@@ -22,6 +22,16 @@
       <version>${pdi.version}</version>
       <scope>provided</scope>
     </dependency>
+     <dependency>
+      <groupId>org.pentaho.di.plugins</groupId>
+      <artifactId>pdi-engine-configuration-api</artifactId>
+      <version>${pdi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.pentaho.di.plugins</groupId>
+      <artifactId>pdi-engine-configuration-impl</artifactId>
+      <version>${pdi.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
