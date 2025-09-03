@@ -4,21 +4,24 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>kettle-ui-parent</artifactId>
+  <groupId>pentaho-kettle</groupId>
+  <artifactId>kettle-ui-api</artifactId>
   <version>11.0.0.0-SNAPSHOT</version>
-  <packaging>pom</packaging>
+  <packaging>jar</packaging>
 
   <parent>
     <groupId>org.pentaho.di</groupId>
-    <artifactId>pdi</artifactId>
+    <artifactId>kettle-ui-parent</artifactId>
     <version>11.0.0.0-SNAPSHOT</version>
   </parent>
 
-  <name>Kettle UI parent</name>
-
-  <modules>
-    <module>api</module>
-    <module>swt</module>
-  </modules>
+  <name>Kettle UI api</name>
+    
+  <dependencies>
+    <dependency>
+      <groupId>org.eclipse.swt</groupId>
+      <artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId>
+    </dependency>
+  </dependencies>
 
 </project>
