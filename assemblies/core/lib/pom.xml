@@ -66,6 +66,11 @@
         </dependency>
         <dependency>
             <groupId>pentaho-kettle</groupId>
+            <artifactId>kettle-engine-ui-swt</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>pentaho-kettle</groupId>
             <artifactId>kettle-dbdialog</artifactId>
             <version>${project.version}</version>
             <exclusions>
