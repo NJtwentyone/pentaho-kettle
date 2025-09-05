@@ -26,8 +26,7 @@ import org.pentaho.di.core.extension.ExtensionPointInterface;
 import org.pentaho.di.core.logging.LogChannelInterface;
 import org.pentaho.di.engine.configuration.api.RunConfiguration;
 import org.pentaho.di.engine.configuration.api.CheckedMetaStoreSupplier;
-import org.pentaho.di.engine.configuration.impl.RunConfigurationManager;
-import org.pentaho.di.engine.configuration.impl.pentaho.DefaultRunConfigurationProvider;
+import org.pentaho.di.engine.configuration.api.RunConfigurationService;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.ui.core.ConstUI;
 import org.pentaho.di.ui.core.widget.tree.LeveledTreeNode;
@@ -44,8 +43,9 @@ import java.util.function.Supplier;
 public class RunConfigurationPopupMenuExtension implements ExtensionPointInterface {
 
   private static Class<?> PKG = RunConfigurationPopupMenuExtension.class;
+  private static Supplier<Spoon> spoonSupplier = Spoon::getInstance;
+  private RunConfigurationServiceFactory serviceFactory = new RunConfigurationServiceFactory();
 
-  private Supplier<Spoon> spoonSupplier = Spoon::getInstance;
   private RunConfigurationTreeItem runConfigurationTreeItem;
   private Menu rootMenu;
   private Menu itemMenu;
@@ -63,7 +63,8 @@ public class RunConfigurationPopupMenuExtension implements ExtensionPointInterfa
       popupMenu = createRootPopupMenu( selectionTree );
     } else if ( selection instanceof RunConfigurationTreeItem ) {
       runConfigurationTreeItem = (RunConfigurationTreeItem) selection;
-      if ( runConfigurationTreeItem.getName().equalsIgnoreCase( DefaultRunConfigurationProvider.DEFAULT_CONFIG_NAME ) ) {
+      // Check if this is the default configuration using string comparison to avoid impl dependency
+      if ( runConfigurationTreeItem.getName().equalsIgnoreCase( "LOCAL" ) ) {
         return;
       }
       popupMenu = createItemPopupMenu( selectionTree );
@@ -105,8 +106,8 @@ public class RunConfigurationPopupMenuExtension implements ExtensionPointInterfa
           Bowl bowl = getEventBowl();
           CheckedMetaStoreSupplier ms = () -> bowl.getMetastore();
           RunConfigurationDelegate runConfigurationDelegate = RunConfigurationDelegate.getInstance( ms );
-          RunConfigurationManager runConfigurationManager = RunConfigurationManager.getInstance( ms );
-          runConfigurationDelegate.edit( runConfigurationManager.load( runConfigurationTreeItem.getName() ) );
+          RunConfigurationService runConfigurationService = serviceFactory.createRunConfigurationService( ms );
+          runConfigurationDelegate.edit( runConfigurationService.load( runConfigurationTreeItem.getName() ) );
         }
       } );
     }
@@ -125,8 +126,8 @@ public class RunConfigurationPopupMenuExtension implements ExtensionPointInterfa
           Bowl bowl = getEventBowl();
           CheckedMetaStoreSupplier ms = () -> bowl.getMetastore();
           RunConfigurationDelegate runConfigurationDelegate = RunConfigurationDelegate.getInstance( ms );
-          RunConfigurationManager runConfigurationManager = RunConfigurationManager.getInstance( ms );
-          runConfigurationDelegate.moveToGlobal( runConfigurationManager, runConfigurationManager.load( runConfigurationTreeItem.getName() ) );
+          RunConfigurationService runConfigurationService = serviceFactory.createRunConfigurationService( ms );
+          runConfigurationDelegate.moveToGlobal( runConfigurationService, runConfigurationService.load( runConfigurationTreeItem.getName() ) );
         }
       } );
 
@@ -138,8 +139,8 @@ public class RunConfigurationPopupMenuExtension implements ExtensionPointInterfa
           Bowl bowl = getEventBowl();
           CheckedMetaStoreSupplier ms = () -> bowl.getMetastore();
           RunConfigurationDelegate runConfigurationDelegate = RunConfigurationDelegate.getInstance( ms );
-          RunConfigurationManager runConfigurationManager = RunConfigurationManager.getInstance( ms );
-          runConfigurationDelegate.copyToGlobal( runConfigurationManager, runConfigurationManager.load( runConfigurationTreeItem.getName() ) );
+          RunConfigurationService runConfigurationService = serviceFactory.createRunConfigurationService( ms );
+          runConfigurationDelegate.copyToGlobal( runConfigurationService, runConfigurationService.load( runConfigurationTreeItem.getName() ) );
         }
       } );
     }
@@ -153,8 +154,8 @@ public class RunConfigurationPopupMenuExtension implements ExtensionPointInterfa
           Bowl bowl = getEventBowl();
           CheckedMetaStoreSupplier ms = () -> bowl.getMetastore();
           RunConfigurationDelegate runConfigurationDelegate = RunConfigurationDelegate.getInstance( ms );
-          RunConfigurationManager runConfigurationManager = RunConfigurationManager.getInstance( ms );
-          runConfigurationDelegate.moveToProject( runConfigurationManager, runConfigurationManager.load( runConfigurationTreeItem.getName() ) );
+          RunConfigurationService runConfigurationService = serviceFactory.createRunConfigurationService( ms );
+          runConfigurationDelegate.moveToProject( runConfigurationService, runConfigurationService.load( runConfigurationTreeItem.getName() ) );
         }
       } );
       MenuItem copyMenuItem = new MenuItem( itemMenu, SWT.NONE );
@@ -164,8 +165,8 @@ public class RunConfigurationPopupMenuExtension implements ExtensionPointInterfa
           Bowl bowl = getEventBowl();
           CheckedMetaStoreSupplier ms = () -> bowl.getMetastore();
           RunConfigurationDelegate runConfigurationDelegate = RunConfigurationDelegate.getInstance( ms );
-          RunConfigurationManager runConfigurationManager = RunConfigurationManager.getInstance( ms );
-          runConfigurationDelegate.copyToProject( runConfigurationManager, runConfigurationManager.load( runConfigurationTreeItem.getName() ) );
+          RunConfigurationService runConfigurationService = serviceFactory.createRunConfigurationService( ms );
+          runConfigurationDelegate.copyToProject( runConfigurationService, runConfigurationService.load( runConfigurationTreeItem.getName() ) );
         }
       } );
     }
@@ -182,8 +183,8 @@ public class RunConfigurationPopupMenuExtension implements ExtensionPointInterfa
         Bowl bowl = getEventBowl();
         CheckedMetaStoreSupplier ms = () -> bowl.getMetastore();
         RunConfigurationDelegate runConfigurationDelegate = RunConfigurationDelegate.getInstance( ms );
-        RunConfigurationManager runConfigurationManager = RunConfigurationManager.getInstance( ms );
-        runConfigurationDelegate.duplicate( runConfigurationManager.load( runConfigurationTreeItem.getName() ) );
+        RunConfigurationService runConfigurationService = serviceFactory.createRunConfigurationService( ms );
+        runConfigurationDelegate.duplicate( runConfigurationService.load( runConfigurationTreeItem.getName() ) );
       }
     } );
 
@@ -194,8 +195,8 @@ public class RunConfigurationPopupMenuExtension implements ExtensionPointInterfa
         Bowl bowl = getEventBowl();
         CheckedMetaStoreSupplier ms = () -> bowl.getMetastore();
         RunConfigurationDelegate runConfigurationDelegate = RunConfigurationDelegate.getInstance( ms );
-        RunConfigurationManager runConfigurationManager = RunConfigurationManager.getInstance( ms );
-        runConfigurationDelegate.delete( runConfigurationManager.load( runConfigurationTreeItem.getName() ) );
+        RunConfigurationService runConfigurationService = serviceFactory.createRunConfigurationService( ms );
+        runConfigurationDelegate.delete( runConfigurationService.load( runConfigurationTreeItem.getName() ) );
       }
     } );
     return itemMenu;
@@ -209,5 +210,21 @@ public class RunConfigurationPopupMenuExtension implements ExtensionPointInterfa
       return spoonSupplier.get().getManagementBowl();
     }
   }
-}
 
+  private class RunConfigurationServiceFactory {
+    private CheckedMetaStoreSupplier ms;
+    private RunConfigurationManager runConfigurationManager;
+    private RunConfigurationDelegate runConfigurationDelegate;
+
+    public RunConfigurationServiceFactory() {
+      Bowl bowl = Spoon.getInstance().getManagementBowl();
+      ms = () -> bowl.getMetastore();
+      runConfigurationManager = RunConfigurationManager.getInstance( ms );
+      runConfigurationDelegate = RunConfigurationDelegate.getInstance( ms );
+    }
+
+    public RunConfigurationService getService() {
+      return new RunConfigurationService( ms, runConfigurationManager, runConfigurationDelegate );
+    }
+  }
+}

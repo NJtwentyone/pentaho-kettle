@@ -1,0 +1,72 @@
+/*! ******************************************************************************
+ *
+ * Pentaho
+ *
+ * Copyright (C) 2024 by Hitachi Vantara, LLC : http://www.pentaho.com
+ *
+ * Use of this software is governed by the Business Source License included
+ * in the LICENSE.TXT file.
+ *
+ * Change Date: 2029-07-20
+ ******************************************************************************/
+
+
+package org.pentaho.di.engine.configuration.impl.pentaho.scheduler;
+
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@XmlRootElement( name = "jobScheduleRequest" )
+@XmlAccessorType( XmlAccessType.FIELD )
+@XmlType( propOrder = { "inputFile", "outputFile", "jobParameters", "pdiParameters" } )
+public class JobScheduleRequest implements Serializable {
+
+  private static final long serialVersionUID = -485489832281790257L;
+
+  private String inputFile;
+
+  private String outputFile;
+
+  private List<JobScheduleParam> jobParameters = new ArrayList<>();
+
+  private Map<String, String> pdiParameters = new HashMap<>();
+
+  public String getInputFile() {
+    return inputFile;
+  }
+
+  public void setInputFile( String file ) {
+    this.inputFile = file;
+  }
+
+  public List<JobScheduleParam> getJobParameters() {
+    return jobParameters;
+  }
+
+  public void setJobParameters( List<JobScheduleParam> jobParameters ) {
+    this.jobParameters = jobParameters;
+  }
+
+  public Map<String, String> getPdiParameters() {
+    return pdiParameters;
+  }
+
+  public void setPdiParameters( Map<String, String> pdiParameters ) {
+    this.pdiParameters = pdiParameters;
+  }
+
+  public String getOutputFile() {
+    return outputFile;
+  }
+
+  public void setOutputFile( String outputFile ) {
+    this.outputFile = outputFile;
+  }
+}
