@@ -40,7 +40,6 @@ import org.pentaho.di.core.Const;
 import org.pentaho.di.core.util.Utils;
 import org.pentaho.di.engine.configuration.api.RunConfiguration;
 import org.pentaho.di.engine.configuration.api.RunConfigurationService;
-import org.pentaho.di.engine.configuration.impl.pentaho.DefaultRunConfiguration;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.ui.core.ConstUI;
 import org.pentaho.di.ui.core.PropsUI;
@@ -281,8 +280,11 @@ public class RunConfigurationDialog extends Dialog
 
   private void setValues() {
     if ( runConfiguration == null ) {
-      runConfiguration = executionConfigurationManager.getRunConfigurationByType( DefaultRunConfiguration.TYPE );
-      runConfigurationMap.put( DefaultRunConfiguration.TYPE, runConfiguration );
+      // Use the first available type instead of hardcoding DefaultRunConfiguration.TYPE
+      String[] types = executionConfigurationManager.getTypes();
+      String defaultType = types.length > 0 ? types[0] : "default";
+      runConfiguration = executionConfigurationManager.getRunConfigurationByType( defaultType );
+      runConfigurationMap.put( defaultType, runConfiguration );
     }
 
     clearOptions();

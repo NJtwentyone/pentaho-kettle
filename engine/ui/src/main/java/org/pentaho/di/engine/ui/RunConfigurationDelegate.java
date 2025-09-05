@@ -25,7 +25,6 @@ import org.pentaho.di.core.extension.KettleExtensionPoint;
 import org.pentaho.di.engine.configuration.api.RunConfiguration;
 import org.pentaho.di.engine.configuration.api.RunConfigurationService;
 import org.pentaho.di.engine.configuration.api.CheckedMetaStoreSupplier;
-import org.pentaho.di.engine.configuration.impl.RunConfigurationManager;
 import org.pentaho.di.engine.configuration.impl.pentaho.DefaultRunConfiguration;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.job.JobMeta;
@@ -48,9 +47,11 @@ public class RunConfigurationDelegate {
   private static Supplier<Spoon> spoonSupplier = Spoon::getInstance;
 
   private RunConfigurationService configurationManager;
+  private RunConfigurationServiceFactory serviceFactory;
 
   private RunConfigurationDelegate( CheckedMetaStoreSupplier supplier ) {
-    configurationManager = RunConfigurationManager.getInstance( supplier );
+    this.serviceFactory = new RunConfigurationServiceFactory();
+    configurationManager = serviceFactory.createRunConfigurationService( supplier );
   }
 
   public static RunConfigurationDelegate getInstance( CheckedMetaStoreSupplier supplier ) {
@@ -94,15 +95,22 @@ public class RunConfigurationDelegate {
               }
 
               jet.setRunConfiguration( runConfig.getName() );
-              if ( runConfig instanceof DefaultRunConfiguration ) {
-                jet.setRemoteSlaveServerName( ( (DefaultRunConfiguration) runConfig ).getServer() );
-                jet.setLoggingRemoteWork( ( (DefaultRunConfiguration) runConfig ).isLogRemoteExecutionLocally() );
-              }
+              // Use reflection to avoid direct dependency on DefaultRunConfiguration
+              updateJobEntryRemoteSettings( jet, runConfig );
               jet.setChanged();
             }
           }
         }
       }
+    }
+  }
+
+  private void updateJobEntryRemoteSettings( JobEntryRunConfigurableInterface jet, RunConfiguration runConfig ) {
+    // Now we can use direct type checking since DefaultRunConfiguration is in the same module
+    if ( runConfig instanceof DefaultRunConfiguration ) {
+      DefaultRunConfiguration defaultConfig = (DefaultRunConfiguration) runConfig;
+      jet.setRemoteSlaveServerName( defaultConfig.getServer() );
+      jet.setLoggingRemoteWork( defaultConfig.isLogRemoteExecutionLocally() );
     }
   }
 
@@ -123,7 +131,7 @@ public class RunConfigurationDelegate {
       index++;
     }
     name = name + String.valueOf( index );
-    DefaultRunConfiguration defaultRunConfiguration = new DefaultRunConfiguration();
+    RunConfiguration defaultRunConfiguration = serviceFactory.createDefaultRunConfiguration();
     defaultRunConfiguration.setName( name );
 
     RunConfigurationDialog dialog =
@@ -182,26 +190,26 @@ public class RunConfigurationDelegate {
     dialog.open();
   }
 
-  public void copyToGlobal( RunConfigurationManager manager, RunConfiguration runConfiguration ) {
+  public void copyToGlobal( RunConfigurationService manager, RunConfiguration runConfiguration ) {
     moveCopy( manager, runConfiguration, spoonSupplier.get().getGlobalManagementBowl(), false );
   }
 
-  public void copyToProject( RunConfigurationManager manager, RunConfiguration runConfiguration ) {
+  public void copyToProject( RunConfigurationService manager, RunConfiguration runConfiguration ) {
     moveCopy( manager, runConfiguration, spoonSupplier.get().getManagementBowl(), false );
   }
 
-  public void moveToGlobal( RunConfigurationManager manager, RunConfiguration runConfiguration ) {
+  public void moveToGlobal( RunConfigurationService manager, RunConfiguration runConfiguration ) {
     moveCopy( manager, runConfiguration, spoonSupplier.get().getGlobalManagementBowl(), true );
   }
 
-  public void moveToProject( RunConfigurationManager manager, RunConfiguration runConfiguration ) {
+  public void moveToProject( RunConfigurationService manager, RunConfiguration runConfiguration ) {
     moveCopy( manager, runConfiguration, Spoon.getInstance().getManagementBowl(), true );
   }
 
-  private void moveCopy( RunConfigurationManager srcManager, RunConfiguration runConfiguration, Bowl targetBowl,
+  private void moveCopy( RunConfigurationService srcManager, RunConfiguration runConfiguration, Bowl targetBowl,
                          boolean deleteSource ) {
     CheckedMetaStoreSupplier ms = () -> targetBowl.getMetastore();
-    RunConfigurationManager targetManager = RunConfigurationManager.getInstance( ms );
+    RunConfigurationService targetManager = serviceFactory.createRunConfigurationService( ms );
     if ( targetManager.getNames().stream().anyMatch( element -> element.equalsIgnoreCase( runConfiguration.getName() ) ) ) {
       if ( !shouldOverwrite( BaseMessages.getString( PKG, "RunConfigurationDialog.OverwriteRunConfigurationYN",
         runConfiguration.getName() ) ) ) {
