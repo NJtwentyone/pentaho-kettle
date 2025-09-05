@@ -25,6 +25,7 @@ import org.pentaho.di.core.extension.KettleExtensionPoint;
 import org.pentaho.di.engine.configuration.api.RunConfiguration;
 import org.pentaho.di.engine.configuration.api.RunConfigurationService;
 import org.pentaho.di.engine.configuration.api.CheckedMetaStoreSupplier;
+import org.pentaho.di.engine.configuration.impl.pentaho.DefaultRunConfiguration;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.job.JobMeta;
 import org.pentaho.di.job.entry.JobEntryInterface;
@@ -105,21 +106,11 @@ public class RunConfigurationDelegate {
   }
 
   private void updateJobEntryRemoteSettings( JobEntryRunConfigurableInterface jet, RunConfiguration runConfig ) {
-    // Use reflection to avoid direct dependency on DefaultRunConfiguration
-    try {
-      if ( runConfig.getClass().getSimpleName().equals( "DefaultRunConfiguration" ) ) {
-        java.lang.reflect.Method getServerMethod = runConfig.getClass().getMethod( "getServer" );
-        java.lang.reflect.Method isLogRemoteMethod = runConfig.getClass().getMethod( "isLogRemoteExecutionLocally" );
-
-        String server = (String) getServerMethod.invoke( runConfig );
-        Boolean logRemote = (Boolean) isLogRemoteMethod.invoke( runConfig );
-
-        jet.setRemoteSlaveServerName( server );
-        jet.setLoggingRemoteWork( logRemote );
-      }
-    } catch ( Exception e ) {
-      // Log and continue if reflection fails
-      spoonSupplier.get().getLog().logBasic( "Unable to set remote settings for run configuration" );
+    // Now we can use direct type checking since DefaultRunConfiguration is in the same module
+    if ( runConfig instanceof DefaultRunConfiguration ) {
+      DefaultRunConfiguration defaultConfig = (DefaultRunConfiguration) runConfig;
+      jet.setRemoteSlaveServerName( defaultConfig.getServer() );
+      jet.setLoggingRemoteWork( defaultConfig.isLogRemoteExecutionLocally() );
     }
   }
 
