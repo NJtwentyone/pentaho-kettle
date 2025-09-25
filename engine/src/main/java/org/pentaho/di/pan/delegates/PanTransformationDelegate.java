@@ -363,4 +363,19 @@ public class PanTransformationDelegate {
   public void setRepository( Repository repository ) {
     this.repository = repository;
   }
+
+  // POC NOTE: creating interface, current code is basically set up to use a factory
+  // to create different execution services based on the execution type
+  // Created this class in this file to avoid creating multiple new files for the POC
+  // should refactor to separate files if we decide to go this route
+  interface TransformationExecutorService {
+    public Result execute( LogChannelInterface log, TransMeta transMeta, TransExecutionConfiguration executionConfiguration, String[] arguments ) throws KettleException;
+  }
+
+  class ClusteredTransformationExecutorService implements TransformationExecutorService {
+    public Result execute( LogChannelInterface log, TransMeta transMeta, TransExecutionConfiguration executionConfiguration, String[] arguments ) throws KettleException {
+      return null; // To be implemented
+    }
+  }
+
 }
