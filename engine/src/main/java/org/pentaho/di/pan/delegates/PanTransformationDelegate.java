@@ -199,40 +199,9 @@ public class PanTransformationDelegate {
    */
   protected Result executeClustered( TransMeta transMeta,
                                    TransExecutionConfiguration executionConfiguration ) throws KettleException {
-
-    log.logBasic( BaseMessages.getString( pkg, "PanTransformationDelegate.Log.ExecutingClustered" ) );
-
-    try {
-      final TransSplitter transSplitter = new TransSplitter( transMeta );
-      transSplitter.splitOriginalTransformation();
-
-      // Inject certain internal variables to make it more intuitive
-      for ( String transVar : Const.INTERNAL_TRANS_VARIABLES ) {
-        executionConfiguration.getVariables().put( transVar, transMeta.getVariable( transVar ) );
-      }
-
-      // Parameters override the variables
-      TransMeta originalTransformation = transSplitter.getOriginalTransformation();
-      for ( String param : originalTransformation.listParameters() ) {
-        String value = Const.NVL( originalTransformation.getParameterValue( param ),
-          Const.NVL( originalTransformation.getParameterDefault( param ),
-            originalTransformation.getVariable( param ) ) );
-        if ( !Utils.isEmpty( value ) ) {
-          executionConfiguration.getVariables().put( param, value );
-        }
-      }
-      executeClustered( transSplitter, executionConfiguration );
-      // Monitor clustered transformation
-      Trans.monitorClusteredTransformation( log, transSplitter, null );
-      Result result = Trans.getClusteredTransformationResult( log, transSplitter, null );
-
-      logClusteredResults( transMeta, result );
-
-      return result;
-
-    } catch ( Exception e ) {
-      throw new KettleException( e );
-    }
+    // POC NOTE: using a simple service class here to demonstrate the concept
+    // In a real implementation, consider using a factory pattern to select the appropriate executor
+    return new ClusteredTransformationExecutorService().execute( log, transMeta, executionConfiguration, null );
   }
 
   public void executeClustered( TransSplitter transSplitter, TransExecutionConfiguration executionConfiguration )
@@ -374,7 +343,39 @@ public class PanTransformationDelegate {
 
   class ClusteredTransformationExecutorService implements TransformationExecutorService {
     public Result execute( LogChannelInterface log, TransMeta transMeta, TransExecutionConfiguration executionConfiguration, String[] arguments ) throws KettleException {
-      return null; // To be implemented
+      log.logBasic( BaseMessages.getString( pkg, "PanTransformationDelegate.Log.ExecutingClustered" ) );
+
+      try {
+        final TransSplitter transSplitter = new TransSplitter( transMeta );
+        transSplitter.splitOriginalTransformation();
+
+        // Inject certain internal variables to make it more intuitive
+        for ( String transVar : Const.INTERNAL_TRANS_VARIABLES ) {
+          executionConfiguration.getVariables().put( transVar, transMeta.getVariable( transVar ) );
+        }
+
+        // Parameters override the variables
+        TransMeta originalTransformation = transSplitter.getOriginalTransformation();
+        for ( String param : originalTransformation.listParameters() ) {
+          String value = Const.NVL( originalTransformation.getParameterValue( param ),
+            Const.NVL( originalTransformation.getParameterDefault( param ),
+              originalTransformation.getVariable( param ) ) );
+          if ( !Utils.isEmpty( value ) ) {
+            executionConfiguration.getVariables().put( param, value );
+          }
+        }
+        executeClustered( transSplitter, executionConfiguration );
+        // Monitor clustered transformation
+        Trans.monitorClusteredTransformation( log, transSplitter, null );
+        Result result = Trans.getClusteredTransformationResult( log, transSplitter, null );
+
+        logClusteredResults( transMeta, result );
+
+        return result;
+
+      } catch ( Exception e ) {
+        throw new KettleException( e );
+      }
     }
   }
 
