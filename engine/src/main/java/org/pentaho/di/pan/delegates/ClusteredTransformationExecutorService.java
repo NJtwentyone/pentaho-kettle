@@ -43,7 +43,7 @@ class ClusteredTransformationExecutorService implements TransformationExecutorSe
 
       return executeClustered( extLog, transMeta, transSplitter, executionConfiguration );
 
-    } catch ( Exception e ) {
+    } catch ( Exception e ) { // FIXME rarely should you catch generic Exception and cast in KettleException, if there is a runtime exception it should be proop
       throw new KettleException( e );
     }
   }
