@@ -7,6 +7,7 @@ import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.logging.LogChannelInterface;
 import org.pentaho.di.core.util.Utils;
 import org.pentaho.di.i18n.BaseMessages;
+import org.pentaho.di.job.Job;
 import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.TransExecutionConfiguration;
 import org.pentaho.di.trans.TransMeta;
@@ -16,16 +17,46 @@ import org.pentaho.di.trans.cluster.TransSplitter;
 class ClusteredTransformationExecutorService implements TransformationExecutorService {
   private static Class<?> pkg = ClusteredTransformationExecutorService.class;
 
-  public Result execute( LogChannelInterface log, TransMeta transMeta,
-                         TransExecutionConfiguration executionConfiguration, String[] arguments ) throws
-    KettleException {
-    log.logBasic(
-      BaseMessages.getString( pkg, "PanTransformationDelegate.Log.ExecutingClustered" ) );
+  TransSplitterExecutionService transSplitterExecutionService;
+
+  public ClusteredTransformationExecutorService() {
+    this( new TransSplitterExecutionService());
+  }
+
+  public ClusteredTransformationExecutorService( TransSplitterExecutionService transSplitterExecutionService )  {
+    this.transSplitterExecutionService = transSplitterExecutionService;
+  }
+
+  /**
+   * Execute transformation in clustered mode.
+   */
+  // POC NOTE: not sure if we need to pass the LogChannelInterface, but it's here as 'extLog' in the current code
+  @Override
+  public Result execute( LogChannelInterface extLog, TransMeta transMeta,
+                         TransExecutionConfiguration executionConfiguration, String[] arguments ) throws KettleException {
+
+    extLog.logBasic( BaseMessages.getString( pkg, "PanTransformationDelegate.Log.ExecutingClustered" ) );
 
     try {
       final TransSplitter transSplitter = new TransSplitter( transMeta );
       transSplitter.splitOriginalTransformation();
 
+      return executeClustered( extLog, transMeta, transSplitter, executionConfiguration );
+
+    } catch ( Exception e ) {
+      throw new KettleException( e );
+    }
+  }
+
+  /**
+   * Execute transformation in clustered mode.
+   */ // FIXME FOCUS on testing this method
+  protected Result executeClustered( LogChannelInterface extLog, TransMeta transMeta, TransSplitter transSplitter,
+                                     TransExecutionConfiguration executionConfiguration ) throws KettleException {
+
+    extLog.logBasic( BaseMessages.getString( pkg, "PanTransformationDelegate.Log.ExecutingClustered" ) );
+
+    try {
       // Inject certain internal variables to make it more intuitive
       for ( String transVar : Const.INTERNAL_TRANS_VARIABLES ) {
         executionConfiguration.getVariables().put( transVar, transMeta.getVariable( transVar ) );
@@ -41,35 +72,70 @@ class ClusteredTransformationExecutorService implements TransformationExecutorSe
           executionConfiguration.getVariables().put( param, value );
         }
       }
-      executeClustered( log, transSplitter, executionConfiguration );
-      // Monitor clustered transformation
-      Trans.monitorClusteredTransformation( log, transSplitter, null );
-      Result result = Trans.getClusteredTransformationResult( log, transSplitter, null );
 
-      //logClusteredResults( transMeta, result ); //  POC NOTE: moved this to back to pan delegate
-
-      return result;
+      // POC NOTE: all this logic was calls to static TransMethod with little interaction
+      // NOW just test and verify behavior of transSplitterExecutionService#executeClustered
+      return transSplitterExecutionService.executeClustered(
+        extLog, transSplitter, null, executionConfiguration
+      );
 
     } catch ( Exception e ) {
       throw new KettleException( e );
     }
   }
 
-  public void executeClustered( LogChannelInterface log, TransSplitter transSplitter, TransExecutionConfiguration executionConfiguration )
-    throws KettleException {
-    // Execute clustered transformation
-    try {
-      Trans.executeClustered( transSplitter, executionConfiguration );
-    } catch ( Exception e ) {
-      cleanupClusterAfterError( log, transSplitter, e );
+  // POC NOTE: commenting out to better compare with TransSplitterExecutionService
+//  public void executeClustered( LogChannelInterface extLog, TransSplitter transSplitter, TransExecutionConfiguration executionConfiguration )
+//    throws KettleException {
+//    // Execute clustered transformation
+//    try {
+//      Trans.executeClustered( transSplitter, executionConfiguration );
+//    } catch ( Exception e ) {
+//      cleanupClusterAfterError( extLog, transSplitter, e );
+//    }
+//  }
+//  public void cleanupClusterAfterError( LogChannelInterface extLog, TransSplitter transSplitter, Exception e ) throws KettleException {
+//    // Clean up cluster in case of error
+//    try {
+//      Trans.cleanupCluster( extLog, transSplitter );
+//    } catch ( Exception cleanupException ) {
+//      throw new KettleException( "Error executing transformation and error cleaning up cluster", e );
+//    }
+//  }
+
+  // POC NOTE: Wrapper class to encapsulate the Trans static methods
+  // 1:1 on Trans static methods for easier mocking/testing
+  // this logic should ideally be moved to TransExecutionConfiguration or a helper class
+  // TODO move to separate file kept in same package for easier tracking
+  // TODO use mockito mockstatic for testing - https://www.baeldung.com/mockito-mock-static-methods
+  public static class TransSplitterExecutionService {
+
+    public Result executeClustered( LogChannelInterface extLog, TransSplitter transSplitter, Job parentJob,
+                                    TransExecutionConfiguration executionConfiguration ) throws KettleException {
+      executeClustered( extLog, transSplitter, executionConfiguration );
+      // Monitor clustered transformation
+      Trans.monitorClusteredTransformation( extLog, transSplitter, parentJob ); // TODO should be able to test using Mockitos MockedStatic
+      return Trans.getClusteredTransformationResult( extLog, transSplitter, parentJob );
     }
-  }
-  public void cleanupClusterAfterError( LogChannelInterface log, TransSplitter transSplitter, Exception e ) throws KettleException {
-    // Clean up cluster in case of error
-    try {
-      Trans.cleanupCluster( log, transSplitter );
-    } catch ( Exception cleanupException ) {
-      throw new KettleException( "Error executing transformation and error cleaning up cluster", e );
+
+    protected void executeClustered(  LogChannelInterface extLog, TransSplitter transSplitter, TransExecutionConfiguration executionConfiguration )
+      throws KettleException {
+      // Execute clustered transformation
+      try {
+        Trans.executeClustered( transSplitter, executionConfiguration );
+      } catch ( Exception e ) {
+        cleanupClusterAfterError( extLog, transSplitter, e );
+      }
     }
+
+    protected void cleanupClusterAfterError(  LogChannelInterface extLog, TransSplitter transSplitter, Exception e ) throws KettleException {
+      // Clean up cluster in case of error
+      try {
+        Trans.cleanupCluster( extLog, transSplitter );
+      } catch ( Exception cleanupException ) {
+        throw new KettleException( "Error executing transformation and error cleaning up cluster", e );
+      }
+    }
+
   }
 }
