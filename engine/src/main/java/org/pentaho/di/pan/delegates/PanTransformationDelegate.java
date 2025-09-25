@@ -20,7 +20,6 @@ import org.pentaho.di.core.extension.ExtensionPointHandler;
 import org.pentaho.di.core.extension.KettleExtensionPoint;
 import org.pentaho.di.core.logging.LogChannelInterface;
 import org.pentaho.di.core.logging.LogLevel;
-import org.pentaho.di.core.util.Utils;
 import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.metastore.MetaStoreConst;
 import org.pentaho.di.repository.Repository;
@@ -44,16 +43,23 @@ public class PanTransformationDelegate {
 
   private LogChannelInterface log;
   private Repository repository;
+  private TransformationExecutorService  clusteredExecutorService;
 
   private static final String DASHES = "-----------------------------------------------------";
 
   public PanTransformationDelegate( LogChannelInterface log ) {
-    this.log = log;
+    this( log, null );
   }
 
   public PanTransformationDelegate( LogChannelInterface log, Repository repository ) {
+    this( log, repository, new ClusteredTransformationExecutorService() );
+  }
+
+  public PanTransformationDelegate( LogChannelInterface log, Repository repository,
+                                    TransformationExecutorService clusteredExecutorService ) {
     this.log = log;
     this.repository = repository;
+    this.clusteredExecutorService = clusteredExecutorService;
   }
 
   /**
@@ -121,6 +127,7 @@ public class PanTransformationDelegate {
                                               String[] arguments ) throws KettleException {
 
     // Is this a local execution?
+    //TODO use map here if locally map.get("LOCAL").execute(...)
     if ( executionConfiguration.isExecutingLocally() ) {
       return executeLocally( transMeta, executionConfiguration, arguments );
 
@@ -201,7 +208,10 @@ public class PanTransformationDelegate {
                                    TransExecutionConfiguration executionConfiguration ) throws KettleException {
     // POC NOTE: using a simple service class here to demonstrate the concept
     // In a real implementation, consider using a factory pattern to select the appropriate executor
-    return new ClusteredTransformationExecutorService().execute( log, transMeta, executionConfiguration, null );
+    Result result = clusteredExecutorService.execute( log, transMeta, executionConfiguration, null );
+    // TODO error check result
+    logClusteredResults( transMeta, result );
+    return result;
   }
 
   public void executeClustered( TransSplitter transSplitter, TransExecutionConfiguration executionConfiguration )
@@ -332,51 +342,4 @@ public class PanTransformationDelegate {
   public void setRepository( Repository repository ) {
     this.repository = repository;
   }
-
-  // POC NOTE: creating interface, current code is basically set up to use a factory
-  // to create different execution services based on the execution type
-  // Created this class in this file to avoid creating multiple new files for the POC
-  // should refactor to separate files if we decide to go this route
-  interface TransformationExecutorService {
-    public Result execute( LogChannelInterface log, TransMeta transMeta, TransExecutionConfiguration executionConfiguration, String[] arguments ) throws KettleException;
-  }
-
-  class ClusteredTransformationExecutorService implements TransformationExecutorService {
-    public Result execute( LogChannelInterface log, TransMeta transMeta, TransExecutionConfiguration executionConfiguration, String[] arguments ) throws KettleException {
-      log.logBasic( BaseMessages.getString( pkg, "PanTransformationDelegate.Log.ExecutingClustered" ) );
-
-      try {
-        final TransSplitter transSplitter = new TransSplitter( transMeta );
-        transSplitter.splitOriginalTransformation();
-
-        // Inject certain internal variables to make it more intuitive
-        for ( String transVar : Const.INTERNAL_TRANS_VARIABLES ) {
-          executionConfiguration.getVariables().put( transVar, transMeta.getVariable( transVar ) );
-        }
-
-        // Parameters override the variables
-        TransMeta originalTransformation = transSplitter.getOriginalTransformation();
-        for ( String param : originalTransformation.listParameters() ) {
-          String value = Const.NVL( originalTransformation.getParameterValue( param ),
-            Const.NVL( originalTransformation.getParameterDefault( param ),
-              originalTransformation.getVariable( param ) ) );
-          if ( !Utils.isEmpty( value ) ) {
-            executionConfiguration.getVariables().put( param, value );
-          }
-        }
-        executeClustered( transSplitter, executionConfiguration );
-        // Monitor clustered transformation
-        Trans.monitorClusteredTransformation( log, transSplitter, null );
-        Result result = Trans.getClusteredTransformationResult( log, transSplitter, null );
-
-        logClusteredResults( transMeta, result );
-
-        return result;
-
-      } catch ( Exception e ) {
-        throw new KettleException( e );
-      }
-    }
-  }
-
 }
