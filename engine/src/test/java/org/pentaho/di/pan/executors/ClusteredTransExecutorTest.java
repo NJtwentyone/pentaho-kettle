@@ -33,14 +33,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ClusteredTransExecutorTest {
+  @Mock
   private LogChannelInterface log;
 
   private static final String DASHES = "-----------------------------------------------------";
 
-  @Mock
+  /**
+   *  never mock the class under test, create a real instance instead, we want to exercise the real code!
+   *  You can get into situations mocking will hide problems with the code under test.
+   */
+  //@Mock // NO - this is the class under test!
   private ClusteredTransExecutorService clusteredTransExecutorService;
   @Mock
   private TransMeta transMeta;
+
   private TransExecutionConfiguration executionConfiguration;
 
   @Mock
@@ -48,9 +54,15 @@ public class ClusteredTransExecutorTest {
 
   @Before
   public void setUp() throws KettleException {
-    KettleEnvironment.init();
+    /**
+     * POC NOTE: try to avoid using  KettleEnvironment.init() in unit tests,
+     * this makes tests slower and is really no longer a "pure" unit test.
+     * Also, you can't run these unit tests in the IDE without adding the file
+     * src/test/resources/kettle-password-encoder-plugins.xml
+     */
+    //    KettleEnvironment.init();
     MockitoAnnotations.openMocks( this );
-    log = new LogChannel( "ClusteredTransExecutorTest" );
+//    log =  LogChannel( "ClusteredTransExecutorTest" ); // NO longer needed with @Mock annotation
     clusteredTransExecutorService = new ClusteredTransExecutorService( transSplitterExecutionService );
     executionConfiguration = PanTransformationDelegate.createClusteredExecutionConfiguration();
   }
