@@ -34,10 +34,10 @@ public class StopMessage implements Message {
     FAILED //failed to stop execution
   }
 
-  private static final long serialVersionUID = 8842623444691045346L;
-  private String reasonPhrase;
-  private String requestUUID;
-  private Status result;
+  private static final long serialVersionUID = 1641758282148544010L;
+  private final String reasonPhrase;
+  private final String requestUUID;
+  private final Status status;
   private final boolean safeStop;
 
 
@@ -64,10 +64,10 @@ public class StopMessage implements Message {
    * Constructor used by driver to send back to daemon server the sessionKilled of the stop operation
    *
    * @param reasonPhrase returns back the reason presented by daemon server for the stop request
-   * @param result       stop operation result: SUCCESS, FAILED, SESSION_KILLED;
+   * @param status       stop operation result: SUCCESS, FAILED, SESSION_KILLED;
    */
-  public StopMessage( String reasonPhrase, Status result ) {
-    this( null, reasonPhrase, result, false );
+  public StopMessage( String reasonPhrase, Status status ) {
+    this( null, reasonPhrase, status, false );
   }
 
   /**
@@ -75,16 +75,24 @@ public class StopMessage implements Message {
    *
    * @param requestUUID  request/execution ID to stop or stopped
    * @param reasonPhrase returns back the reason presented by daemon server for the stop request
-   * @param result       stop operation result: SUCCESS, FAILED, SESSION_KILLED;
+   * @param status       stop operation result: SUCCESS, FAILED, SESSION_KILLED;
    */
-  public StopMessage( String requestUUID, String reasonPhrase, Status result ) {
-    this( requestUUID, reasonPhrase, result, false );
+  public StopMessage( String requestUUID, String reasonPhrase, Status status ) {
+    this( requestUUID, reasonPhrase, status, false );
   }
 
-  private StopMessage( String requestUUID, String reasonPhrase, Status result, boolean safeStop ) {
+  /**
+   * Constructor used by driver to send back to daemon server the sessionKilled of the stop operation
+   *
+   * @param requestUUID  request/execution ID to stop or stopped
+   * @param reasonPhrase returns back the reason presented by daemon server for the stop request
+   * @param status       stop operation result: SUCCESS, FAILED, SESSION_KILLED;
+   * @param safeStop     true if the stop should be "graceful".
+   */
+  private StopMessage( String requestUUID, String reasonPhrase, Status status, boolean safeStop ) {
     this.requestUUID = requestUUID;
     this.reasonPhrase = reasonPhrase;
-    this.result = result;
+    this.status = status;
     this.safeStop = safeStop;
   }
 
@@ -98,15 +106,6 @@ public class StopMessage implements Message {
   }
 
   /**
-   * Sets the stop reason phrase
-   *
-   * @param reasonPhrase stop reason phrase
-   */
-  public void setReasonPhrase( String reasonPhrase ) {
-    this.reasonPhrase = reasonPhrase;
-  }
-
-  /**
    * Returns the stop reason.
    *
    * @return stop reason;
@@ -116,32 +115,45 @@ public class StopMessage implements Message {
   }
 
   /**
+   * Returns the status.
+   * @return
+   */
+  public Status getStatus() {
+    return status;
+  }
+
+  /**
    * True if the execution was stop with success, false otherwise.
    *
    * @return true if failed to stop the execution, false otherwise;
+   * @deprecated As of 11.1.0.0, use {@link #getStatus()} instead.
    */
+  @Deprecated( since = "11.1.0.0", forRemoval = true )
   public boolean operationSuccessful() {
-    return this.result == Status.SUCCESS;
+    return this.status == Status.SUCCESS;
   }
 
   /**
    * True if failed to stop the execution, false otherwise.
    *
    * @return true if failed to stop the execution, false otherwise;
+   * @deprecated As of 11.1.0.0, use {@link #getStatus()} instead.
    */
+  @Deprecated( since = "11.1.0.0", forRemoval = true )
   public boolean operationFailed() {
-    return this.result == Status.FAILED;
+    return this.status == Status.FAILED;
   }
 
   /**
    * True if the session was killed, false otherwise.
    *
    * @return true if the session was killed, false otherwise;
+   * @deprecated As of 11.1.0.0, use {@link #getStatus()} instead.
    */
+  @Deprecated( since = "11.1.0.0", forRemoval = true )
   public boolean sessionWasKilled() {
-    return this.result == Status.SESSION_KILLED;
+    return this.status == Status.SESSION_KILLED;
   }
-
 
   /**
    * True if the stop should be "graceful".  I.e. should finish any work currently
@@ -158,7 +170,7 @@ public class StopMessage implements Message {
   public static class Builder {
     private String reasonPhrase;
     private String requestUUID;
-    private Status result;
+    private Status status;
     private boolean safeStop = false;
 
     public Builder reasonPhrase( String reasonPhrase ) {
@@ -171,8 +183,8 @@ public class StopMessage implements Message {
       return this;
     }
 
-    public Builder result( Status result ) {
-      this.result = result;
+    public Builder result( Status status ) {
+      this.status = status;
       return this;
     }
 
@@ -182,7 +194,7 @@ public class StopMessage implements Message {
     }
 
     public StopMessage build() {
-      return new StopMessage( requestUUID, reasonPhrase, result, safeStop );
+      return new StopMessage( requestUUID, reasonPhrase, status, safeStop );
     }
   }
 
