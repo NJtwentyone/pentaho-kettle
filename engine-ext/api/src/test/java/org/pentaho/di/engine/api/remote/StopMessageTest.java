@@ -95,6 +95,23 @@ public class StopMessageTest {
   }
 
   @Test
+  public void builderIsSafeStopFalseStatusSessionKilled() {
+    assertNotNull( StopMessage.builder() );
+
+    StopMessage message = StopMessage.builder()
+      .requestUUID( REQUEST_UUID )
+      .reasonPhrase( REASON_PHRASE )
+      .result( StopMessage.Status.SESSION_KILLED)
+      .safeStop( false )
+      .build();
+
+    assertEquals( REQUEST_UUID, message.getRequestUUID() );
+    assertEquals( REASON_PHRASE, message.getReasonPhrase() );
+    assertEquals( StopMessage.Status.SESSION_KILLED, message.getStatus() );
+    assertFalse( message.isSafeStop() );
+  }
+
+  @Test
   public void builderUsesDefaultsWhenNothingIsSet() {
     StopMessage message = StopMessage.builder().build();
 
