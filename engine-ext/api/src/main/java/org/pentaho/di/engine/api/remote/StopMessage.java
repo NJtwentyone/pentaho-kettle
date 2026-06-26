@@ -29,10 +29,23 @@ package org.pentaho.di.engine.api.remote;
 @SuppressWarnings ( "unused" )
 public class StopMessage implements Message {
 
+
+  /**
+   * The result of stop operation.
+   */
   public enum Status {
-    SESSION_KILLED, // spark session was killed
-    SUCCESS, //Stop execution was successful
-    FAILED //failed to stop execution
+    /**
+     * The session was killed by the stop request.
+     */
+    SESSION_KILLED,
+    /**
+     * The stop request was successful.
+     */
+    SUCCESS,
+    /**
+     * The stop request failed.
+     */
+    FAILED
   }
 
   private static final long serialVersionUID = 1641758282148544010L;
@@ -65,7 +78,7 @@ public class StopMessage implements Message {
    * Constructor used by driver to send back to daemon server the sessionKilled of the stop operation
    *
    * @param reasonPhrase returns back the reason presented by daemon server for the stop request
-   * @param status       stop operation result: SUCCESS, FAILED, SESSION_KILLED;
+   * @param status       stop operation status: {@link StopMessage.Status}
    */
   public StopMessage( String reasonPhrase, Status status ) {
     this( null, reasonPhrase, status, false );
@@ -76,7 +89,7 @@ public class StopMessage implements Message {
    *
    * @param requestUUID  request/execution ID to stop or stopped
    * @param reasonPhrase returns back the reason presented by daemon server for the stop request
-   * @param status       stop operation result: SUCCESS, FAILED, SESSION_KILLED;
+   * @param status       stop operation status: {@link StopMessage.Status}
    */
   public StopMessage( String requestUUID, String reasonPhrase, Status status ) {
     this( requestUUID, reasonPhrase, status, false );
@@ -87,7 +100,7 @@ public class StopMessage implements Message {
    *
    * @param requestUUID  request/execution ID to stop or stopped
    * @param reasonPhrase returns back the reason presented by daemon server for the stop request
-   * @param status       stop operation result: SUCCESS, FAILED, SESSION_KILLED;
+   * @param status       stop operation status: {@link StopMessage.Status}
    * @param safeStop     true if the stop should be "graceful".
    */
   private StopMessage( String requestUUID, String reasonPhrase, Status status, boolean safeStop ) {
